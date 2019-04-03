@@ -6,6 +6,9 @@ search with granular, word-level Annotation results to enable front-end highligh
 OCR transcriptions are ingested from word-level [ALTO](https://www.loc.gov/standards/alto/) format and indexed in 
 [SOLR](http://lucene.apache.org/solr/).
 
+Please note this is a work in development and therefore is offered with no guarantees as to stability, usefulness,
+security etc.
+
 ## Quick Start
 
 Run the application:
@@ -21,7 +24,7 @@ Whiiif is designed for Python 3, but may work under Python 2, however no testing
 please edit `Makefile`
 
 Whiiif requires a preinstalled SOLR instance, and configuration in `settings.cfg`. A schema and other necessary SOLR
-configuration files are provided in the `solrconf` directory. Please copy these into the folder for the Whiiif core.
+configuration files are provided in the `solrconf` directory. Please copy these into the `conf` folder for the Whiiif core.
 
 Some Flask dependencies are compiled during installation, so `gcc` and Python header files need to be present.
 For example, on Ubuntu:
