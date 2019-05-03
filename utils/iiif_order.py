@@ -69,7 +69,7 @@ def order_object(object, object_type, recursive = False):
                 if type(ordered[key]) == list:
                     for idx, val in enumerate(ordered[key]):
                         ordered[key][idx] = order_object(ordered[key][idx], subtype, recursive=True)
-                elif type(ordered[key]) == dict:
+                elif type(ordered[key]) == dict or type(ordered[key]) == OrderedDict:
                     ordered[key] = order_object(ordered[key], subtype, recursive=True)
 
     return ordered
