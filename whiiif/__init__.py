@@ -3,7 +3,7 @@ from flask import Flask
 
 app = Flask(__name__)
 app.config.from_object('whiiif.default_settings')
-#app.config.from_envvar('WHIIIF_SETTINGS')
+app.config.from_envvar('WHIIIF_SETTINGS', silent=True)
 
 if not app.debug:
     import logging
