@@ -76,8 +76,17 @@ def pipeline(alto, manifest, identifier, modify):
                        "@id": search_url,
                        "profile": "http://iiif.io/api/search/0/search"
                        }
+        if "service" in manifest_json:
+            if type(manifest_json["service"]) == list:
+                manifest_json["service"].append(service_doc)
+            elif type(manifest_json["service"]) == dict or type(manifest_json["service"]) == OrderedDict:
+                manifest_json["service"] = [manifest_json["service"], service_doc]
+            else:
+                dprint("Couldn't add service to manifest, don't know how to deal with key type:",
+                       type(manifest_json["service"]))
+        else:
+            manifest_json["service"] = service_doc
 
-        manifest_json["service"] = service_doc
         ordered_manifest = order_object(manifest_json, "manifest", recursive=True)
         try:
             json.dump(ordered_manifest,open(manifest, 'w', encoding="UTF8"), indent=2)
