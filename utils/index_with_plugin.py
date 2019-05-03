@@ -82,8 +82,9 @@ def pipeline(alto, manifest, identifier, modify):
             elif type(manifest_json["service"]) == dict or type(manifest_json["service"]) == OrderedDict:
                 manifest_json["service"] = [manifest_json["service"], service_doc]
             else:
-                dprint("Couldn't add service to manifest, don't know how to deal with key type:",
-                       type(manifest_json["service"]))
+                #dprint("Couldn't add service to manifest, don't know how to deal with key type:",
+                #       type(manifest_json["service"]))
+                manifest_json["service"] = [manifest_json["service"], service_doc]
         else:
             manifest_json["service"] = service_doc
 
