@@ -72,6 +72,7 @@
        The examples below can be used to load some solr-contribs along
        with their external dependencies.
     -->
+  <!--<lib dir="../lib" />-->
   <lib dir="${solr.install.dir:../../../..}/contrib/extraction/lib" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-cell-\d.*\.jar" />
 
@@ -85,6 +86,9 @@
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-velocity-\d.*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-ltr-\d.*\.jar" />
 
+
+  <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-ocrhighlighting-\d.*-SNAPSHOT\.jar" />
+
   <!-- an exact 'path' can be used instead of a 'dir' to specify a
        specific jar file.  This will cause a serious error to be logged
        if it can't be loaded.
@@ -92,6 +96,7 @@
   <!--
      <lib path="../a-jar-that-does-not-exist.jar" />
   -->
+<!--     <lib path="lib/solr-ocrhighlighting-0.1-SNAPSHOT.jar" />-->
 
   <!-- Data Directory
 
@@ -688,6 +693,22 @@
        of SearchComponents (see below) and supports distributed
        queries across multiple shards
     -->
+
+  <searchComponent class="org.mdz.search.solrocr.solr.HighlightComponent" name="ocrHighlight"
+                   ocrFormat="org.mdz.search.solrocr.formats.alto.AltoFormat">
+    <lst name="ocrFields">
+      <str>ocr_text</str>
+    </lst>
+    <fieldLoader class="org.mdz.search.solrocr.lucene.fieldloader.PathFieldLoader" encoding="ascii">
+      <lst name="externalFields">
+        <str name="ocr_text">/home/mike/projects/whiiif/xml/{id}-escaped.xml</str>
+      </lst>
+    </fieldLoader>
+
+
+  </searchComponent>
+
+
   <requestHandler name="/select" class="solr.SearchHandler">
     <!-- default values for query parameters can be specified, these
          will be overridden by parameters in the request
@@ -754,6 +775,10 @@
          <str>nameOfCustomComponent2</str>
        </arr>
       -->
+     <arr name="last-components">
+       <str>ocrHighlight</str>
+     </arr>
+
   </requestHandler>
 
   <!-- A request handler that returns indented JSON by default -->
@@ -1352,4 +1377,5 @@
       EditorialMarkerFactory will do exactly that:
      <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
     -->
+
 </config>

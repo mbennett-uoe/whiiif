@@ -439,6 +439,33 @@
       <tokenizer class="solr.WhitespaceTokenizerFactory"/>
     </analyzer>
   </fieldType>
+  <fieldType name="text_ocr" class="solr.TextField" storeOffsetsWithPositions="true" termVectors="true">
+    <analyzer type="index">
+      <charFilter class="org.mdz.search.solrocr.formats.alto.AltoCharFilterFactory" />
+      <charFilter class="solr.HTMLStripCharFilterFactory" />
+      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+      <filter class="solr.StopFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>
+      <filter class="solr.WordDelimiterGraphFilterFactory" catenateNumbers="1" generateNumberParts="1" splitOnCaseChange="0" generateWordParts="0" catenateAll="0" catenateWords="1"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+      <filter class="solr.PorterStemFilterFactory"/>
+      <filter class="solr.FlattenGraphFilterFactory"/>
+   </analyzer>
+    <analyzer type="query">
+      <charFilter class="org.mdz.search.solrocr.formats.alto.AltoCharFilterFactory" />
+      <charFilter class="solr.HTMLStripCharFilterFactory" />
+      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+<!--      <filter class="solr.StopFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>-->
+      <filter class="solr.WordDelimiterGraphFilterFactory" catenateNumbers="1" generateNumberParts="1" splitOnCaseChange="0" generateWordParts="0" catenateAll="0" catenateWords="1"/>
+      <filter class="solr.LowerCaseFilterFactory"/>
+      <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
+      <filter class="solr.PorterStemFilterFactory"/>
+      <filter class="solr.FlattenGraphFilterFactory"/>
+    </analyzer>
+  </fieldType>
+
+
+
   <field name="_nest_path_" type="_nest_path_"/>
   <field name="_root_" type="string" docValues="false" indexed="true" stored="false"/>
   <field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>
@@ -452,6 +479,8 @@
   <field name="manifest_url" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" omitPositions="true"/>
   <field name="page_text" type="text_en_splitting" indexed="true" termOffsets="false" stored="true" uninvertible="false" termPositions="true" termVectors="true"/>
   <field name="word_coords" type="text_general"/>
+  <field name="ocr_text" type="text_ocr" indexed="true" stored="false" multiValued="false"/>
+<!--  <field name="ocr_test" type="test" indexed="true" stored="true"/>-->
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
