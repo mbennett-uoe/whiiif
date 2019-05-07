@@ -1,7 +1,7 @@
 import json
 import re
 
-from flask import render_template, request
+from flask import render_template, request, url_for
 import requests
 
 from whiiif import app
@@ -19,27 +19,35 @@ def search(manifest):
     ignored = list(set(request.args.keys()) & unimplemented)
 
     query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] + \
-                "/select?&df=page_text&fl=canvas_id%2Ccanvas_url%2Cword_coords&hl.fl=page_text&hl.snippets=50&hl=on" + \
-                "&fq=manifest_id:" + manifest + "&q=" + q
+                "/select?&df=ocr_text&hl.fl=ocr_text&hl.snippets=50&hl=on&hl.ocr.absoluteHighlights=true" + \
+                "&hl.ocr.contextBlock=line&hl.ocr.contextSize=2&hl.ocr.limitBlock=page" + \
+                "&fq=id:" + manifest + "&q=" + q
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
 
     docs = results_json["response"]["docs"]
 
     results = []
+    total_results = 0
     for doc in docs:
-        hltext = results_json["highlighting"][doc["canvas_id"]]["page_text"]
-        coords = json.loads(doc["word_coords"][0])
-        for fragment in hltext:
-            matches = re.findall('<em>(.*?)</em>', fragment)
-            for match in matches:
-                xywh = coords[match].pop()
-                results.append({"canvas_id": doc["canvas_id"],
-                                "canvas_url": doc["canvas_url"],
-                                "coords": xywh,
-                                "chars": match})
+        snippets = results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["snippets"]
+        total_results +=  int(results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"])
+        for fragment in snippets:
+            #matches = re.findall('<em>(.*?)</em>', fragment["text"])
+            canvas = fragment["page"]
+            for highlight in fragment["highlights"]:
+                for part in highlight:
+                    x = part["ulx"]
+                    y = part["uly"]
+                    w = part["lrx"] - part["ulx"]
+                    h = part["lry"] - part["uly"]
+                    results.append({"manifest_id": doc["id"],
+                                    "manifest_url": doc["manifest_url"],#.replace("https","http"),
+                                    "canvas_id": canvas,
+                                    "coords": "{},{},{},{}".format(x,y,w,h),
+                                    "chars": part["text"]})
 
-    response_dict = make_annotations(results, results_json["response"]["numFound"], ignored)
+    response_dict = make_annotations(results, total_results, ignored)
 
     response = app.response_class(
         response=json.dumps(response_dict),
@@ -63,12 +71,12 @@ def make_annotations(results, hit_count, ignored):
                  "resources": []}
 
     for idx, result in enumerate(results):
-        result_base = {"@id": "uun:whiiif:%s:%s"%(result["canvas_id"], idx),
+        result_base = {"@id": "uun:whiiif:%s:%s:%s"%(result["manifest_id"], result["canvas_id"], idx),
                        "@type": "oa:Annotation",
                        "motivation": "sc:painting",
                        "resource": {"@type": "cnt:ContentAsText",
                                     "chars": result["chars"]},
-                       "on": result["canvas_url"] + "#xywh=" + result["coords"]
+                       "on": "{}/canvas/{}#xywh={}".format(result["manifest_url"], result["canvas_id"], result["coords"])
                        }
         anno_base["resources"].append(result_base)
 
