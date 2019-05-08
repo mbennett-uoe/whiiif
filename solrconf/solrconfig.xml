@@ -701,7 +701,7 @@
     </lst>
     <fieldLoader class="org.mdz.search.solrocr.lucene.fieldloader.PathFieldLoader" encoding="ascii">
       <lst name="externalFields">
-        <str name="ocr_text">/home/mike/projects/whiiif/xml/{id}-escaped.xml</str>
+        <str name="ocr_text">/opt/whiiif/resources/xml/{id}_escaped.xml</str>
       </lst>
     </fieldLoader>
 
