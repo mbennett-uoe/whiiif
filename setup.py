@@ -10,6 +10,7 @@ setup(
     install_requires=[
         'flask',
         'requests',
-        'lxml'
+        'lxml',
+        'bleach'
     ],
 )

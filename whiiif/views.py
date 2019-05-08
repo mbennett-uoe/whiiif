@@ -3,7 +3,7 @@ import re
 
 from flask import render_template, request, url_for
 import requests
-
+import bleach
 from whiiif import app
 
 
@@ -14,12 +14,14 @@ def index():
 
 @app.route('/search/<manifest>')
 def search(manifest):
-    q = request.args.get("q")
+    q = bleach.clean(request.args.get("q"), strip=True, tags=[])
+    manifest_regexp = re.compile(r'[^A-Za-z0-9-]')
+    manifest = manifest_regexp.sub("", manifest)
     unimplemented = {"motivation", "date", "user"}
     ignored = list(set(request.args.keys()) & unimplemented)
 
     query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] + \
-                "/select?&df=ocr_text&hl.fl=ocr_text&hl.snippets=50&hl=on&hl.ocr.absoluteHighlights=true" + \
+                "/select?&df=ocr_text&hl.fl=ocr_text&hl.snippets=4096&hl=on&hl.ocr.absoluteHighlights=true" + \
                 "&hl.ocr.contextBlock=line&hl.ocr.contextSize=2&hl.ocr.limitBlock=page" + \
                 "&fq=id:" + manifest + "&q=" + q
     solr_results = requests.get(query_url)
