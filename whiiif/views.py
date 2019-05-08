@@ -84,3 +84,63 @@ def make_annotations(results, hit_count, ignored):
 
     return anno_base
 
+@app.route("/collection/search")
+def collection_search():
+    q = bleach.clean(request.args.get("q"), strip=True, tags=[])
+    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] + \
+                "/select?&df=ocr_text&hl.fl=ocr_text&hl.snippets=3&hl=on" + \
+                "&hl.ocr.contextBlock=line&hl.ocr.contextSize=2&hl.ocr.limitBlock=page" + \
+                "&q=" + q
+
+    solr_results = requests.get(query_url)
+    results_json = solr_results.json()
+    docs = results_json["response"]["docs"]
+
+    results = []
+    for doc in docs:
+
+        manifest_path = "utils/{}.json".format(doc["id"].replace("00","0"))
+        mani_json = json.load(open(manifest_path,'r'))
+        cvlist = mani_json["sequences"][0]["canvases"]
+
+
+        result = {"id": doc["id"],
+                  "manifest_url": doc["manifest_url"],
+                  "total_results": results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"],
+                  "canvases": []
+                  }
+        snippets = results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["snippets"]
+
+        for fragment in snippets:
+            # matches = re.findall('<em>(.*?)</em>', fragment["text"])
+
+            x = fragment["region"]["ulx"]
+            y = fragment["region"]["uly"]
+            w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
+            h = fragment["region"]["lry"] - fragment["region"]["uly"]
+
+            cv = cvlist[int(fragment["page"].replace("page_",""))]
+            img = cv["images"][0]["resource"]["@id"]
+            frag = img.replace("/full/full", "/{},{},{},{}/{},".format(x,y,w,h,int(w/4)), 1)
+            canvas_doc = {"canvas": fragment["page"],
+                          "region": "{},{},{},{}".format(x,y,w,h),
+                          "url": frag,
+                          "highlights": []}
+
+            for highlight in fragment["highlights"]:
+                for part in highlight:
+                    x = int(part["ulx"]/4)
+                    y = int(part["uly"]/4)
+                    w = int((part["lrx"] - part["ulx"])/4)
+                    h = int((part["lry"] - part["uly"])/4)
+                    canvas_doc["highlights"].append({"coords": "{},{},{},{}".format(x, y, w, h),
+                                    "chars": part["text"]})
+            result["canvases"].append(canvas_doc)
+        results.append(result)
+
+    response = app.response_class(
+        response=json.dumps(results),
+        mimetype='application/json',
+        headers=[('Access-Control-Allow-Origin', '*')]
+    )
+    return response
