@@ -9,6 +9,8 @@ OCR transcriptions are ingested from word-level [ALTO](https://www.loc.gov/stand
 Please note this is a work in development and therefore is offered with no guarantees as to stability, usefulness,
 security etc.
 
+**Whiiif is currently being redeveloped using a different, more accurate approach for returning image co-ordinate points. This will replace the current v1.0 release completely and will not be backwards compatible - please watch this space for more updates**
+
 ## Quick Start
 
 Run the application:
