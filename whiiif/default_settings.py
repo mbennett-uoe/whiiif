@@ -1,5 +1,5 @@
-DEBUG = True  # make sure DEBUG is off unless enabled explicitly otherwise
-FLASK_ENV = 'development'
+DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
+FLASK_ENV = 'production'
 SERVER_NAME = 'localhost:5000'
 LOG_DIR = '.'  # create log files in current working directory
 SOLR_URL = 'http://localhost:8983/solr' # assume local solr instance
