@@ -12,6 +12,7 @@ def index():
     app.logger.warning('sample message')
     return render_template('index.html')
 
+
 @app.route('/search/<manifest>')
 @app.route('/search-v1/<manifest>')
 def search(manifest):
@@ -22,10 +23,13 @@ def search(manifest):
     ignored = list(set(request.args.keys()) & unimplemented)
 
     query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] + \
-                "/select?&df=ocr_text&hl.fl=ocr_text&hl.snippets=4096&hl=on&hl.ocr.absoluteHighlights=true" + \
-                "&hl.ocr.contextBlock=word&hl.ocr.contextSize=5&hl.ocr.limitBlock=page" + \
-                "&fq=id:" + manifest + "&q=" + q
-#    return(query_url)
+                "/select?hl=on&hl.ocr.absoluteHighlights=true" + \
+                "&df=" + app.config["OCR_TEXT_FIELD"] + \
+                "&hl.fl=" + app.config["OCR_TEXT_FIELD"] + \
+                "&hl.snippets=" + app.config["WITHIN_MAX_RESULTS"] + \
+                "&fq=" + app.config["DOCUMENT_ID_FIELD"] + manifest + \
+                "&q=" + q
+    #    return(query_url)
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
 
@@ -35,9 +39,9 @@ def search(manifest):
     total_results = 0
     for doc in docs:
         snippets = results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["snippets"]
-        total_results +=  int(results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"])
+        total_results += int(results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"])
         for fragment in snippets:
-            #matches = re.findall('<em>(.*?)</em>', fragment["text"])
+            # matches = re.findall('<em>(.*?)</em>', fragment["text"])
             canvas = fragment["page"]
             for highlight in fragment["highlights"]:
                 grouped_hls = []
@@ -51,11 +55,11 @@ def search(manifest):
                     else:
                         scale = 1
                     grouped_hls.append({"manifest_id": doc["id"],
-                                    "manifest_url": doc["manifest_url"],#.replace("https","http"),
-                                    "canvas_id": canvas,
-                                    "coords": "{},{},{},{}".format(x,y,w,h),
-                                    "chars": part["text"],
-                                    "scale": scale})
+                                        "manifest_url": doc["manifest_url"],  # .replace("https","http"),
+                                        "canvas_id": canvas,
+                                        "coords": "{},{},{},{}".format(x, y, w, h),
+                                        "chars": part["text"],
+                                        "scale": scale})
                 results.append(grouped_hls)
 
     response_dict = make_annotations(results, total_results, ignored)
@@ -64,11 +68,11 @@ def search(manifest):
         response=json.dumps(response_dict),
         mimetype='application/json',
         headers=[('Access-Control-Allow-Origin', '*')]
-        )
+    )
     return response
 
-def make_annotations(results, hit_count, ignored):
 
+def make_annotations(results, hit_count, ignored):
     search_id = request.url
 
     anno_base = {"@context": ["http://iiif.io/api/presentation/2/context.json",
@@ -87,22 +91,25 @@ def make_annotations(results, hit_count, ignored):
         part_chars = []
         for in_idx, result_part in enumerate(result):
             if in_idx > 0:
-                suff = chr(97+in_idx)
+                suff = chr(97 + in_idx)
             else:
                 suff = ""
-            x,y,w,h = result_part["coords"].split(",")
+            x, y, w, h = result_part["coords"].split(",")
             if result_part["scale"] != 1:
-                x,y,w,h = int(x), int(y), int(w), int(h)
-                x,y,w,h = int(x*result_part["scale"]), int(y*result_part["scale"]), int(w*result_part["scale"]), int(h*result_part["scale"])
-                x,y,w,h = str(x), str(y), str(w), str(h)
-            result_base = {"@id": "uun:whiiif:%s:%s:%s%s"%(result_part["manifest_id"], result_part["canvas_id"], idx, suff),
-                           "@type": "oa:Annotation",
-                           "motivation": "sc:painting",
-                           "resource": {"@type": "cnt:ContentAsText",
-                                        "chars": result_part["chars"]},
-#                           "on": "{}/canvas/{}#xywh={}".format(result_part["manifest_url"], result_part["canvas_id"], result_part["coords"])
-                           "on": "{}/canvas/{}#xywh={}".format(result_part["manifest_url"], result_part["canvas_id"], ",".join([x,y,w,h]))
-                           }
+                x, y, w, h = int(x), int(y), int(w), int(h)
+                x, y, w, h = int(x * result_part["scale"]), int(y * result_part["scale"]), int(
+                    w * result_part["scale"]), int(h * result_part["scale"])
+                x, y, w, h = str(x), str(y), str(w), str(h)
+            result_base = {
+                "@id": "uun:whiiif:%s:%s:%s%s" % (result_part["manifest_id"], result_part["canvas_id"], idx, suff),
+                "@type": "oa:Annotation",
+                "motivation": "sc:painting",
+                "resource": {"@type": "cnt:ContentAsText",
+                             "chars": result_part["chars"]},
+                #                           "on": "{}/canvas/{}#xywh={}".format(result_part["manifest_url"], result_part["canvas_id"], result_part["coords"])
+                "on": "{}/canvas/{}#xywh={}".format(result_part["manifest_url"], result_part["canvas_id"],
+                                                    ",".join([x, y, w, h]))
+            }
             anno_base["resources"].append(result_base)
             part_ids.append(result_base["@id"])
             part_chars.append(result_part["chars"])
@@ -112,6 +119,7 @@ def make_annotations(results, hit_count, ignored):
                     "match": " ".join(part_chars)}
         anno_base["hits"].append(hit_base)
     return anno_base
+
 
 @app.route("/collection/search")
 def collection_search():
@@ -128,10 +136,9 @@ def collection_search():
     results = []
     for doc in docs:
 
-        manifest_path = "resources/manifests/{}.json".format(doc["id"]) #.replace("00","0"))
-        mani_json = json.load(open(manifest_path,'r'))
+        manifest_path = "resources/manifests/{}.json".format(doc["id"])  # .replace("00","0"))
+        mani_json = json.load(open(manifest_path, 'r'))
         cvlist = mani_json["sequences"][0]["canvases"]
-
 
         result = {"id": doc["id"],
                   "manifest_url": doc["manifest_url"],
@@ -148,22 +155,22 @@ def collection_search():
             w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
             h = fragment["region"]["lry"] - fragment["region"]["uly"]
 
-            cv = cvlist[int(fragment["page"].replace("page_",""))]
+            cv = cvlist[int(fragment["page"].replace("page_", ""))]
             img = cv["images"][0]["resource"]["@id"]
-            frag = img.replace("/full/full", "/{},{},{},{}/{},".format(x,y,w,h,int(w/4)), 1)
+            frag = img.replace("/full/full", "/{},{},{},{}/{},".format(x, y, w, h, int(w / 4)), 1)
             canvas_doc = {"canvas": fragment["page"],
-                          "region": "{},{},{},{}".format(x,y,w,h),
+                          "region": "{},{},{},{}".format(x, y, w, h),
                           "url": frag,
                           "highlights": []}
 
             for highlight in fragment["highlights"]:
                 for part in highlight:
-                    x = int(part["ulx"]/4)
-                    y = int(part["uly"]/4)
-                    w = int((part["lrx"] - part["ulx"])/4)
-                    h = int((part["lry"] - part["uly"])/4)
+                    x = int(part["ulx"] / 4)
+                    y = int(part["uly"] / 4)
+                    w = int((part["lrx"] - part["ulx"]) / 4)
+                    h = int((part["lry"] - part["uly"]) / 4)
                     canvas_doc["highlights"].append({"coords": "{},{},{},{}".format(x, y, w, h),
-                                    "chars": part["text"]})
+                                                     "chars": part["text"]})
             result["canvases"].append(canvas_doc)
         results.append(result)
 
@@ -191,13 +198,12 @@ def snippet_search(id):
     results = []
     for doc in docs:
 
-#        manifest_path = "resources/manifests/{}.json".format(doc["id"]) #.replace("00","0"))
-#        mani_json = json.load(open(manifest_path,'r'))
-#        cvlist = mani_json["sequences"][0]["canvases"]
-
+        #        manifest_path = "resources/manifests/{}.json".format(doc["id"]) #.replace("00","0"))
+        #        mani_json = json.load(open(manifest_path,'r'))
+        #        cvlist = mani_json["sequences"][0]["canvases"]
 
         result = {"id": doc["id"],
-#                  "manifest_url": doc["manifest_url"],
+                  #                  "manifest_url": doc["manifest_url"],
                   "total_results": results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"],
                   "canvases": []
                   }
@@ -211,16 +217,16 @@ def snippet_search(id):
             w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
             h = fragment["region"]["lry"] - fragment["region"]["uly"]
             if doc["scale"] != 1:
-                x,y,w,h = int(x), int(y), int(w), int(h)
-                x,y,w,h = int(x*doc["scale"]), int(y*doc["scale"]), int(w*doc["scale"]), int(h*doc["scale"])
-                x,y,w,h = str(x), str(y), str(w), str(h)
+                x, y, w, h = int(x), int(y), int(w), int(h)
+                x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(h * doc["scale"])
+                x, y, w, h = str(x), str(y), str(w), str(h)
 
-            #cv = cvlist[int(fragment["page"].replace("page_",""))]
-            #img = cv["images"][0]["resource"]["@id"]
-            #frag = img.replace("/full/full", "/{},{},{},{}/{},".format(x,y,w,h,int(w/4)), 1)
+            # cv = cvlist[int(fragment["page"].replace("page_",""))]
+            # img = cv["images"][0]["resource"]["@id"]
+            # frag = img.replace("/full/full", "/{},{},{},{}/{},".format(x,y,w,h,int(w/4)), 1)
             canvas_doc = {"canvas": fragment["page"],
-                          "region": "{},{},{},{}".format(x,y,w,h),
-#                          "url": frag,
+                          "region": "{},{},{},{}".format(x, y, w, h),
+                          #                          "url": frag,
                           "highlights": []}
 
             for highlight in fragment["highlights"]:
@@ -231,13 +237,14 @@ def snippet_search(id):
                     w = int((part["lrx"] - part["ulx"]))
                     h = int((part["lry"] - part["uly"]))
                     if doc["scale"] != 1:
-                        x,y,w,h = int(x), int(y), int(w), int(h)
-                        #x,y,w,h = int(x*6.46), int(y*6.46), int(w*6.46), int(h*6.46)
-                        x,y,w,h = int(x*doc["scale"]), int(y*doc["scale"]), int(w*doc["scale"]), int(h*doc["scale"])
-                        x,y,w,h = str(x), str(y), str(w), str(h)
+                        x, y, w, h = int(x), int(y), int(w), int(h)
+                        # x,y,w,h = int(x*6.46), int(y*6.46), int(w*6.46), int(h*6.46)
+                        x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(
+                            h * doc["scale"])
+                        x, y, w, h = str(x), str(y), str(w), str(h)
 
                     canvas_doc["highlights"].append({"coords": "{},{},{},{}".format(x, y, w, h),
-                                    "chars": part["text"]})
+                                                     "chars": part["text"]})
             result["canvases"].append(canvas_doc)
         results.append(result)
 
@@ -247,4 +254,3 @@ def snippet_search(id):
         headers=[('Access-Control-Allow-Origin', '*')]
     )
     return response
-
