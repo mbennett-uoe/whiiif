@@ -21,15 +21,14 @@ def search(manifest):
     manifest = manifest_regexp.sub("", manifest)
     unimplemented = {"motivation", "date", "user"}
     ignored = list(set(request.args.keys()) & unimplemented)
-
-    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] \
-                + "/select?hl=on&hl.ocr.absoluteHighlights=true" \
-                + "&df=" + app.config["OCR_TEXT_FIELD"] \
-                + "&hl.fl=" + app.config["OCR_TEXT_FIELD"] \
-                + "&hl.snippets=" + app.config["WITHIN_MAX_RESULTS"] \
-                + "&fq=" + app.config["DOCUMENT_ID_FIELD"] + ":" + manifest \
-                + "&q=" + q
-    #    return(query_url)
+    query_url = "{}/{}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
+    query_url += "/select?hl=on&hl.ocr.absoluteHighlights=true"
+    query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.fl={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.snippets={}".format(app.config["WITHIN_MAX_RESULTS"])
+    query_url += "&fq={0}:{1}".format(app.config["DOCUMENT_ID_FIELD"], manifest)
+    query_url += "&q={}".format(q)
+    #print(query_url)
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
 
@@ -124,15 +123,15 @@ def make_annotations(results, hit_count, ignored):
 @app.route("/collection/search")
 def collection_search():
     q = bleach.clean(request.args.get("q"), strip=True, tags=[])
-    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] \
-                + "/select?hl=on&rows=" + app.config["COLLECTION_MAX_RESULTS"] \
-                + "&df=" + app.config["OCR_TEXT_FIELD"] \
-                + "&hl.fl=" + app.config["OCR_TEXT_FIELD"] \
-                + "&hl.snippets=" + app.config["COLLECTION_MAX_DOCUMENT_RESULTS"] \
-                + "&hl.ocr.contextBlock=" + app.config["COLLECTION_SNIPPET_CONTEXT"] \
-                + "&hl.ocr.contextSize=" + app.config["COLLECTION_SNIPPET_CONTEXT_SIZE"] \
-                + "&hl.ocr.limitBlock=" + app.config["COLLECTION_SNIPPET_CONTEXT_LIMIT"] \
-                + "&q=" + q
+    query_url = "{0}/{1}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
+    query_url += "/select?hl=on&rows={}".format(app.config["COLLECTION_MAX_RESULTS"])
+    query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.fl={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.snippets={}".format(app.config["COLLECTION_MAX_DOCUMENT_RESULTS"])
+    query_url += "&hl.ocr.contextBlock={}".format(app.config["COLLECTION_SNIPPET_CONTEXT"])
+    query_url += "&hl.ocr.contextSize={}".format(app.config["COLLECTION_SNIPPET_CONTEXT_SIZE"])
+    query_url += "&hl.ocr.limitBlock={}".format(app.config["COLLECTION_SNIPPET_CONTEXT_LIMIT"])
+    query_url += "&q={}".format(q)
 
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
@@ -191,16 +190,16 @@ def collection_search():
 def snippet_search(id):
     q = bleach.clean(request.args.get("q", default=""), strip=True, tags=[])
     snips = bleach.clean(request.args.get("snips", default="10"), strip=True, tags=[])
-    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] \
-                + "/select?hl=on" \
-                + "&hl.snippets=" + app.config["SNIPPETS_MAX_RESULTS"] \
-                + "&df=" + app.config["OCR_TEXT_FIELD"] \
-                + "&hl.fl=" + app.config["OCR_TEXT_FIELD"] \
-                + "&hl.ocr.contextBlock=" + app.config["SNIPPET_CONTEXT"] \
-                + "&hl.ocr.contextSize=" + app.config["SNIPPET_CONTEXT_SIZE"] \
-                + "&hl.ocr.limitBlock=" + app.config["SNIPPET_CONTEXT_LIMIT"] \
-                + "&fq=" + app.config["DOCUMENT_ID_FIELD"] + ":" + id \
-                + "&q=" + q
+    query_url = "{0}/{1}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
+    query_url += "/select?hl=on"
+    query_url += "&hl.snippets={}".format(app.config["SNIPPETS_MAX_RESULTS"])
+    query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.fl={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.ocr.contextBlock={}".format(app.config["SNIPPET_CONTEXT"])
+    query_url += "&hl.ocr.contextSize={}".format(app.config["SNIPPET_CONTEXT_SIZE"])
+    query_url += "&hl.ocr.limitBlock={}".format(app.config["SNIPPET_CONTEXT_LIMIT"])
+    query_url += "&fq={0}:{1}".format(app.config["DOCUMENT_ID_FIELD"], id)
+    query_url += "&q={}".format(q)
 
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
