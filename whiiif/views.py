@@ -27,7 +27,7 @@ def search(manifest):
                 "&df=" + app.config["OCR_TEXT_FIELD"] + \
                 "&hl.fl=" + app.config["OCR_TEXT_FIELD"] + \
                 "&hl.snippets=" + app.config["WITHIN_MAX_RESULTS"] + \
-                "&fq=" + app.config["DOCUMENT_ID_FIELD"] + manifest + \
+                "&fq=" + app.config["DOCUMENT_ID_FIELD"] + ":" + manifest + \
                 "&q=" + q
     #    return(query_url)
     solr_results = requests.get(query_url)
