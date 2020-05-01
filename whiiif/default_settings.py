@@ -25,5 +25,5 @@ COLLECTION_SNIPPET_CONTEXT_SIZE = 5  # number of context objects to return eithe
 COLLECTION_SNIPPET_CONTEXT_LIMIT = 'block'  # don't extend the context beyond this container object
 
 # External files
-XML_LOCATION = '../resources/xml'  # location to store ALTO-XML files. must be same as PathFieldLoader in solr config
-MANIFEST_LOCATION = '../resources/manifests'  # location of the IIIF manifests
+XML_LOCATION = '/opt/whiiif/resources/xml'  # location to store ALTO-XML files. must be same as PathFieldLoader in solr config
+MANIFEST_LOCATION = '/opt/whiiif/resources/manifests'  # location of the IIIF manifests
