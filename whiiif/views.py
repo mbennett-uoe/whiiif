@@ -38,8 +38,8 @@ def search(manifest):
     results = []
     total_results = 0
     for doc in docs:
-        snippets = results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["snippets"]
-        total_results += int(results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"])
+        snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
+        total_results += int(results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"])
         for fragment in snippets:
             # matches = re.findall('<em>(.*?)</em>', fragment["text"])
             canvas = fragment["page"]
@@ -54,8 +54,8 @@ def search(manifest):
                         scale = doc["scale"]
                     else:
                         scale = 1
-                    grouped_hls.append({"manifest_id": doc["id"],
-                                        "manifest_url": doc["manifest_url"],  # .replace("https","http"),
+                    grouped_hls.append({"manifest_id": doc[app.config["DOCUMENT_ID_FIELD"]],
+                                        "manifest_url": doc[app.config["MANIFEST_URL_FIELD"]],
                                         "canvas_id": canvas,
                                         "coords": "{},{},{},{}".format(x, y, w, h),
                                         "chars": part["text"],
@@ -141,16 +141,16 @@ def collection_search():
     results = []
     for doc in docs:
 
-        manifest_path = app.config["MANIFEST_LOCATION"] + "/{}.json".format(doc["id"])
+        manifest_path = app.config["MANIFEST_LOCATION"] + "/{}.json".format(doc[app.config["DOCUMENT_ID_FIELD"]])
         mani_json = json.load(open(manifest_path, 'r'))
         cvlist = mani_json["sequences"][0]["canvases"]
 
-        result = {"id": doc["id"],
-                  "manifest_url": doc["manifest_url"],
-                  "total_results": results_json["ocrHighlighting"][doc["id"]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
+        result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
+                  "manifest_url": doc[app.config["MANIFEST_URL_FIELD"]],
+                  "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
                   "canvases": []
                   }
-        snippets = results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["snippets"]
+        snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
 
         for fragment in snippets:
             # matches = re.findall('<em>(.*?)</em>', fragment["text"])
