@@ -1,6 +1,4 @@
 # General Whiiif Settings
-DEBUG = False  # make sure DEBUG is off unless enabled explicitly otherwise
-FLASK_ENV = 'production'
 SERVER_NAME = 'localhost:5000'
 LOG_DIR = '.'  # create log files in current working directory
 
