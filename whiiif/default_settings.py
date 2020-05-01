@@ -20,7 +20,8 @@ SNIPPET_CONTEXT = 'word'  # context for the returned snippets - can be one of wo
 SNIPPET_CONTEXT_SIZE = 5  # number of context objects to return either side of the result
 SNIPPET_CONTEXT_LIMIT = 'block'  # don't extend the context beyond this container object
 # Collection search
-COLLECTION_MAX_RESULTS = 5  # Max results per document, *not* overall
+COLLECTION_MAX_DOCUMENT_RESULTS = 5  # Max results per document, *not* overall
+COLLECTION_MAX_RESULTS = 200  # Max number of documents returned overall
 COLLECTION_SNIPPET_CONTEXT = 'word'  # context for the returned snippets - can be one of word, line or block
 COLLECTION_SNIPPET_CONTEXT_SIZE = 5  # number of context objects to return either side of the result
 COLLECTION_SNIPPET_CONTEXT_LIMIT = 'block'  # don't extend the context beyond this container object

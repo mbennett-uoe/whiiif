@@ -124,10 +124,15 @@ def make_annotations(results, hit_count, ignored):
 @app.route("/collection/search")
 def collection_search():
     q = bleach.clean(request.args.get("q"), strip=True, tags=[])
-    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] + \
-                "/select?&df=ocr_text&hl.fl=ocr_text&hl.snippets=3&hl=on&rows=50" + \
-                "&hl.ocr.contextBlock=word&hl.ocr.contextSize=5&hl.ocr.limitBlock=block" + \
-                "&q=" + q
+    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] \
+                + "/select?hl=on&rows=" + app.config["COLLECTION_MAX_RESULTS"] \
+                + "&df=" + app.config["OCR_TEXT_FIELD"] \
+                + "&hl.fl=" + app.config["OCR_TEXT_FIELD"] \
+                + "&hl.snippets=" + app.config["COLLECTION_MAX_DOCUMENT_RESULTS"] \
+                + "&hl.ocr.contextBlock=" + app.config["COLLECTION_SNIPPET_CONTEXT"] \
+                + "&hl.ocr.contextSize=" + app.config["COLLECTION_SNIPPET_CONTEXT_SIZE"] \
+                + "&hl.ocr.limitBlock=" + app.config["COLLECTION_SNIPPET_CONTEXT_LIMIT"] \
+                + "&q=" + q
 
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
@@ -136,13 +141,13 @@ def collection_search():
     results = []
     for doc in docs:
 
-        manifest_path = "resources/manifests/{}.json".format(doc["id"])  # .replace("00","0"))
+        manifest_path = app.config["MANIFEST_LOCATION"] + "/{}.json".format(doc["id"])
         mani_json = json.load(open(manifest_path, 'r'))
         cvlist = mani_json["sequences"][0]["canvases"]
 
         result = {"id": doc["id"],
                   "manifest_url": doc["manifest_url"],
-                  "total_results": results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"],
+                  "total_results": results_json["ocrHighlighting"][doc["id"]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
                   "canvases": []
                   }
         snippets = results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["snippets"]
