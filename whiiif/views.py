@@ -16,7 +16,7 @@ def index():
 @app.route('/search/<manifest>')
 @app.route('/search-v1/<manifest>')
 def search(manifest):
-    q = bleach.clean(request.args.get("q"), strip=True, tags=[])
+    q = bleach.clean(request.args.get("q", default=""), strip=True, tags=[])
     manifest_regexp = re.compile(r'[^A-Za-z0-9-_]')
     manifest = manifest_regexp.sub("", manifest)
     unimplemented = {"motivation", "date", "user"}
