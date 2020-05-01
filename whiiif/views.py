@@ -149,9 +149,13 @@ def collection_search():
     results = []
     for doc in docs:
 
-        manifest_path = app.config["MANIFEST_LOCATION"] + "/{}.json".format(doc[app.config["DOCUMENT_ID_FIELD"]])
-        mani_json = json.load(open(manifest_path, 'r'))
-        cvlist = mani_json["sequences"][0]["canvases"]
+        try:
+            manifest_path = app.config["MANIFEST_LOCATION"] + "/{}.json".format(doc[app.config["DOCUMENT_ID_FIELD"]])
+            mani_json = json.load(open(manifest_path, 'r'))
+            cvlist = mani_json["sequences"][0]["canvases"]
+        except FileNotFoundError as e:
+            app.log_exception(e)
+            continue
 
         result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
                   "manifest_url": doc[app.config["MANIFEST_URL_FIELD"]],
