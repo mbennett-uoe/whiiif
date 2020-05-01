@@ -1,6 +1,6 @@
 import json
 import re
-
+from os import path
 from flask import render_template, request, url_for
 import requests
 import bleach
@@ -150,7 +150,7 @@ def collection_search():
     for doc in docs:
 
         try:
-            manifest_path = app.config["MANIFEST_LOCATION"] + "/{}.json".format(doc[app.config["DOCUMENT_ID_FIELD"]])
+            manifest_path = path.join(app.config["MANIFEST_LOCATION"], doc[app.config["DOCUMENT_ID_FIELD"]]) + ".json"
             mani_json = json.load(open(manifest_path, 'r'))
             cvlist = mani_json["sequences"][0]["canvases"]
         except FileNotFoundError as e:
@@ -165,7 +165,7 @@ def collection_search():
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
 
         for fragment in snippets:
-            # matches = re.findall('<em>(.*?)</em>', fragment["text"])
+            #matches = re.findall('<em>(.*?)</em>', fragment["text"])
 
             x = fragment["region"]["ulx"]
             y = fragment["region"]["uly"]
