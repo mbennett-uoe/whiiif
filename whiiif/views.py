@@ -16,11 +16,18 @@ def index():
 @app.route('/search/<manifest>')
 @app.route('/search-v1/<manifest>')
 def search(manifest):
+    app.logger.info("Processing IIIF Search request for document {}".format(manifest))
+
     q = bleach.clean(request.args.get("q", default=""), strip=True, tags=[])
     manifest_regexp = re.compile(r'[^A-Za-z0-9-_]')
     manifest = manifest_regexp.sub("", manifest)
     unimplemented = {"motivation", "date", "user"}
     ignored = list(set(request.args.keys()) & unimplemented)
+
+    app.logger.debug("Request original q: {}".format(request.args.get("q", default="")))
+    app.logger.debug("Request bleached q: {}".format(q))
+    app.logger.debug("Regexed manifest ID: {}".format(manifest))
+
     query_url = "{}/{}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
     query_url += "/select?hl=on&hl.ocr.absoluteHighlights=true"
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
@@ -28,10 +35,14 @@ def search(manifest):
     query_url += "&hl.snippets={}".format(app.config["WITHIN_MAX_RESULTS"])
     query_url += "&fq={0}:{1}".format(app.config["DOCUMENT_ID_FIELD"], manifest)
     query_url += "&q={}".format(q)
-    #print(query_url)
+
+    app.logger.info("Built query: {}".format(query_url))
+
     try:
         solr_results = requests.get(query_url)
+        app.logger.debug("Solr request response code: {}".format(solr_results.status_code))
         results_json = solr_results.json()
+        app.logger.debug("Solr JSON response code: {}".format(results_json["responseHeader"]["status"]))
         docs = results_json["response"]["docs"]
     except (requests.exceptions.ConnectionError, KeyError, ValueError) as e:
         app.log_exception(e)
@@ -126,7 +137,13 @@ def make_annotations(results, hit_count, ignored):
 
 @app.route("/collection/search")
 def collection_search():
+    app.logger.info("Processing Collection Search request")
+
     q = bleach.clean(request.args.get("q"), strip=True, tags=[])
+
+    app.logger.debug("Request original q: {}".format(request.args.get("q", default="")))
+    app.logger.debug("Request bleached q: {}".format(q))
+
     query_url = "{0}/{1}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
     query_url += "/select?hl=on&rows={}".format(app.config["COLLECTION_MAX_RESULTS"])
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
@@ -137,9 +154,13 @@ def collection_search():
     query_url += "&hl.ocr.limitBlock={}".format(app.config["COLLECTION_SNIPPET_CONTEXT_LIMIT"])
     query_url += "&q={}".format(q)
 
+    app.logger.info("Built query: {}".format(query_url))
+
     try:
         solr_results = requests.get(query_url)
+        app.logger.debug("Solr request response code: {}".format(solr_results.status_code))
         results_json = solr_results.json()
+        app.logger.debug("Solr JSON response code: {}".format(results_json["responseHeader"]["status"]))
         docs = results_json["response"]["docs"]
     except (requests.exceptions.ConnectionError, KeyError, ValueError) as e:
         app.log_exception(e)
@@ -201,11 +222,18 @@ def collection_search():
 
 @app.route("/snippets/<id>")
 def snippet_search(id):
+    app.logger.info("Processing Snippet Search request for document {}".format(id))
+
     q = bleach.clean(request.args.get("q", default=""), strip=True, tags=[])
-    snips = bleach.clean(request.args.get("snips", default="10"), strip=True, tags=[])
+    snips = bleach.clean(request.args.get("snips", default=str(app.config["SNIPPETS_MAX_RESULTS"])), strip=True, tags=[])
+
+    app.logger.debug("Request original q: {}".format(request.args.get("q", default="")))
+    app.logger.debug("Request bleached q: {}".format(q))
+    app.logger.debug("Request snips: {}".format(snips))
+
     query_url = "{0}/{1}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
     query_url += "/select?hl=on"
-    query_url += "&hl.snippets={}".format(app.config["SNIPPETS_MAX_RESULTS"])
+    query_url += "&hl.snippets={}".format(snips)
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.fl={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.ocr.contextBlock={}".format(app.config["SNIPPET_CONTEXT"])
@@ -214,9 +242,13 @@ def snippet_search(id):
     query_url += "&fq={0}:{1}".format(app.config["DOCUMENT_ID_FIELD"], id)
     query_url += "&q={}".format(q)
 
+    app.logger.info("Built query: {}".format(query_url))
+
     try:
         solr_results = requests.get(query_url)
+        app.logger.debug("Solr request response code: {}".format(solr_results.status_code))
         results_json = solr_results.json()
+        app.logger.debug("Solr JSON response code: {}".format(results_json["responseHeader"]["status"]))
         docs = results_json["response"]["docs"]
     except (requests.exceptions.ConnectionError, KeyError, ValueError) as e:
         app.log_exception(e)
