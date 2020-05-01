@@ -22,13 +22,13 @@ def search(manifest):
     unimplemented = {"motivation", "date", "user"}
     ignored = list(set(request.args.keys()) & unimplemented)
 
-    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] + \
-                "/select?hl=on&hl.ocr.absoluteHighlights=true" + \
-                "&df=" + app.config["OCR_TEXT_FIELD"] + \
-                "&hl.fl=" + app.config["OCR_TEXT_FIELD"] + \
-                "&hl.snippets=" + app.config["WITHIN_MAX_RESULTS"] + \
-                "&fq=" + app.config["DOCUMENT_ID_FIELD"] + ":" + manifest + \
-                "&q=" + q
+    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] \
+                + "/select?hl=on&hl.ocr.absoluteHighlights=true" \
+                + "&df=" + app.config["OCR_TEXT_FIELD"] \
+                + "&hl.fl=" + app.config["OCR_TEXT_FIELD"] \
+                + "&hl.snippets=" + app.config["WITHIN_MAX_RESULTS"] \
+                + "&fq=" + app.config["DOCUMENT_ID_FIELD"] + ":" + manifest \
+                + "&q=" + q
     #    return(query_url)
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
