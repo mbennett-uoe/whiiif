@@ -191,10 +191,16 @@ def collection_search():
 def snippet_search(id):
     q = bleach.clean(request.args.get("q", default=""), strip=True, tags=[])
     snips = bleach.clean(request.args.get("snips", default="10"), strip=True, tags=[])
-    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] + \
-                "/select?&df=ocr_text&hl.fl=ocr_text&hl.snippets=" + snips + "&hl=on&rows=50" + \
-                "&hl.ocr.contextBlock=word&hl.ocr.contextSize=5&hl.ocr.limitBlock=block" + \
-                "&fq=id:" + id + "&q=" + q
+    query_url = app.config["SOLR_URL"] + "/" + app.config["SOLR_CORE"] \
+                + "/select?hl=on" \
+                + "&hl.snippets=" + app.config["SNIPPETS_MAX_RESULTS"] \
+                + "&df=" + app.config["OCR_TEXT_FIELD"] \
+                + "&hl.fl=" + app.config["OCR_TEXT_FIELD"] \
+                + "&hl.ocr.contextBlock=" + app.config["SNIPPET_CONTEXT"] \
+                + "&hl.ocr.contextSize=" + app.config["SNIPPET_CONTEXT_SIZE"] \
+                + "&hl.ocr.limitBlock=" + app.config["SNIPPET_CONTEXT_LIMIT"] \
+                + "&fq=" + app.config["DOCUMENT_ID_FIELD"] + ":" + id \
+                + "&q=" + q
 
     solr_results = requests.get(query_url)
     results_json = solr_results.json()
@@ -207,12 +213,12 @@ def snippet_search(id):
         #        mani_json = json.load(open(manifest_path,'r'))
         #        cvlist = mani_json["sequences"][0]["canvases"]
 
-        result = {"id": doc["id"],
+        result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
                   #                  "manifest_url": doc["manifest_url"],
-                  "total_results": results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["numTotal"],
+                  "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
                   "canvases": []
                   }
-        snippets = results_json["ocrHighlighting"][doc["id"]]["ocr_text"]["snippets"]
+        snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
 
         for fragment in snippets:
             # matches = re.findall('<em>(.*?)</em>', fragment["text"])
