@@ -29,10 +29,14 @@ def search(manifest):
     query_url += "&fq={0}:{1}".format(app.config["DOCUMENT_ID_FIELD"], manifest)
     query_url += "&q={}".format(q)
     #print(query_url)
-    solr_results = requests.get(query_url)
-    results_json = solr_results.json()
-
-    docs = results_json["response"]["docs"]
+    try:
+        solr_results = requests.get(query_url)
+        results_json = solr_results.json()
+        docs = results_json["response"]["docs"]
+    except (requests.exceptions.ConnectionError, KeyError, ValueError) as e:
+        app.log_exception(e)
+        results_json = {}
+        docs = []
 
     results = []
     total_results = 0
@@ -133,9 +137,14 @@ def collection_search():
     query_url += "&hl.ocr.limitBlock={}".format(app.config["COLLECTION_SNIPPET_CONTEXT_LIMIT"])
     query_url += "&q={}".format(q)
 
-    solr_results = requests.get(query_url)
-    results_json = solr_results.json()
-    docs = results_json["response"]["docs"]
+    try:
+        solr_results = requests.get(query_url)
+        results_json = solr_results.json()
+        docs = results_json["response"]["docs"]
+    except (requests.exceptions.ConnectionError, KeyError, ValueError) as e:
+        app.log_exception(e)
+        results_json = {}
+        docs = []
 
     results = []
     for doc in docs:
@@ -201,9 +210,14 @@ def snippet_search(id):
     query_url += "&fq={0}:{1}".format(app.config["DOCUMENT_ID_FIELD"], id)
     query_url += "&q={}".format(q)
 
-    solr_results = requests.get(query_url)
-    results_json = solr_results.json()
-    docs = results_json["response"]["docs"]
+    try:
+        solr_results = requests.get(query_url)
+        results_json = solr_results.json()
+        docs = results_json["response"]["docs"]
+    except (requests.exceptions.ConnectionError, KeyError, ValueError) as e:
+        app.log_exception(e)
+        results_json = {}
+        docs = []
 
     results = []
     for doc in docs:
