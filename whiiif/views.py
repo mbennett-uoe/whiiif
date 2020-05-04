@@ -14,7 +14,6 @@ def index():
 
 
 @app.route('/search/<manifest>')
-@app.route('/search-v1/<manifest>')
 def search(manifest):
     app.logger.info("Processing IIIF Search request for document {}".format(manifest))
 
