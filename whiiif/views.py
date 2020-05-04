@@ -276,7 +276,7 @@ def snippet_search(id):
             y = fragment["region"]["uly"]
             w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
             h = fragment["region"]["lry"] - fragment["region"]["uly"]
-            if doc["scale"] != 1:
+            if "scale" in doc and doc["scale"] != 1:
                 x, y, w, h = int(x), int(y), int(w), int(h)
                 x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(h * doc["scale"])
                 x, y, w, h = str(x), str(y), str(w), str(h)
@@ -296,7 +296,7 @@ def snippet_search(id):
                     y = int(part["uly"])
                     w = int((part["lrx"] - part["ulx"]))
                     h = int((part["lry"] - part["uly"]))
-                    if doc["scale"] != 1:
+                    if "scale" in doc and doc["scale"] != 1:
                         x, y, w, h = int(x), int(y), int(w), int(h)
                         # x,y,w,h = int(x*6.46), int(y*6.46), int(w*6.46), int(h*6.46)
                         x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(
