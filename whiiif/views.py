@@ -9,7 +9,7 @@ from whiiif import app
 
 @app.route('/')
 def index():
-    app.logger.warning('sample message')
+    app.logger.debug('Index page loaded - this should (currently) only occur when tests are being run')
     return render_template('index.html')
 
 
@@ -55,7 +55,6 @@ def search(manifest):
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
         total_results += int(results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"])
         for fragment in snippets:
-            # matches = re.findall('<em>(.*?)</em>', fragment["text"])
             canvas = fragment["page"]
             for highlight in fragment["highlights"]:
                 grouped_hls = []
@@ -105,9 +104,9 @@ def make_annotations(results, hit_count, ignored):
         part_chars = []
         for in_idx, result_part in enumerate(result):
             if in_idx > 0:
-                suff = chr(97 + in_idx)
+                suffix = chr(97 + in_idx)
             else:
-                suff = ""
+                suffix = ""
             x, y, w, h = result_part["coords"].split(",")
             if result_part["scale"] != 1:
                 x, y, w, h = int(x), int(y), int(w), int(h)
@@ -115,12 +114,11 @@ def make_annotations(results, hit_count, ignored):
                     w * result_part["scale"]), int(h * result_part["scale"])
                 x, y, w, h = str(x), str(y), str(w), str(h)
             result_base = {
-                "@id": "uun:whiiif:%s:%s:%s%s" % (result_part["manifest_id"], result_part["canvas_id"], idx, suff),
+                "@id": "uun:whiiif:%s:%s:%s%s" % (result_part["manifest_id"], result_part["canvas_id"], idx, suffix),
                 "@type": "oa:Annotation",
                 "motivation": "sc:painting",
                 "resource": {"@type": "cnt:ContentAsText",
                              "chars": result_part["chars"]},
-                #                           "on": "{}/canvas/{}#xywh={}".format(result_part["manifest_url"], result_part["canvas_id"], result_part["coords"])
                 "on": "{}/canvas/{}#xywh={}".format(result_part["manifest_url"], result_part["canvas_id"],
                                                     ",".join([x, y, w, h]))
             }
@@ -186,8 +184,6 @@ def collection_search():
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
 
         for fragment in snippets:
-            #matches = re.findall('<em>(.*?)</em>', fragment["text"])
-
             x = fragment["region"]["ulx"]
             y = fragment["region"]["uly"]
             w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
@@ -257,11 +253,6 @@ def snippet_search(id):
 
     results = []
     for doc in docs:
-
-        #        manifest_path = "resources/manifests/{}.json".format(doc["id"]) #.replace("00","0"))
-        #        mani_json = json.load(open(manifest_path,'r'))
-        #        cvlist = mani_json["sequences"][0]["canvases"]
-
         result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
                   #                  "manifest_url": doc["manifest_url"],
                   "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
@@ -270,8 +261,6 @@ def snippet_search(id):
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
 
         for fragment in snippets:
-            # matches = re.findall('<em>(.*?)</em>', fragment["text"])
-
             x = fragment["region"]["ulx"]
             y = fragment["region"]["uly"]
             w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
@@ -281,12 +270,8 @@ def snippet_search(id):
                 x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(h * doc["scale"])
                 x, y, w, h = str(x), str(y), str(w), str(h)
 
-            # cv = cvlist[int(fragment["page"].replace("page_",""))]
-            # img = cv["images"][0]["resource"]["@id"]
-            # frag = img.replace("/full/full", "/{},{},{},{}/{},".format(x,y,w,h,int(w/4)), 1)
             canvas_doc = {"canvas": fragment["page"],
                           "region": "{},{},{},{}".format(x, y, w, h),
-                          #                          "url": frag,
                           "highlights": []}
 
             for highlight in fragment["highlights"]:
@@ -298,7 +283,6 @@ def snippet_search(id):
                     h = int((part["lry"] - part["uly"]))
                     if "scale" in doc and doc["scale"] != 1:
                         x, y, w, h = int(x), int(y), int(w), int(h)
-                        # x,y,w,h = int(x*6.46), int(y*6.46), int(w*6.46), int(h*6.46)
                         x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(
                             h * doc["scale"])
                         x, y, w, h = str(x), str(y), str(w), str(h)
