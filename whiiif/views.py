@@ -30,7 +30,7 @@ def search(manifest):
     query_url = "{}/{}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
     query_url += "/select?hl=on&hl.ocr.absoluteHighlights=true"
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
-    query_url += "&hl.fl={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.ocr.fl={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.snippets={}".format(app.config["WITHIN_MAX_RESULTS"])
     query_url += "&fq={0}:{1}".format(app.config["DOCUMENT_ID_FIELD"], manifest)
     query_url += "&q={}".format(q)
@@ -144,7 +144,7 @@ def collection_search():
     query_url = "{0}/{1}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
     query_url += "/select?hl=on&rows={}".format(app.config["COLLECTION_MAX_RESULTS"])
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
-    query_url += "&hl.fl={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.ocr.fl={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.snippets={}".format(app.config["COLLECTION_MAX_DOCUMENT_RESULTS"])
     query_url += "&hl.ocr.contextBlock={}".format(app.config["COLLECTION_SNIPPET_CONTEXT"])
     query_url += "&hl.ocr.contextSize={}".format(app.config["COLLECTION_SNIPPET_CONTEXT_SIZE"])
@@ -230,7 +230,7 @@ def snippet_search(id):
     query_url += "/select?hl=on"
     query_url += "&hl.snippets={}".format(snips)
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
-    query_url += "&hl.fl={}".format(app.config["OCR_TEXT_FIELD"])
+    query_url += "&hl.ocr.fl={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.ocr.contextBlock={}".format(app.config["SNIPPET_CONTEXT"])
     query_url += "&hl.ocr.contextSize={}".format(app.config["SNIPPET_CONTEXT_SIZE"])
     query_url += "&hl.ocr.limitBlock={}".format(app.config["SNIPPET_CONTEXT_LIMIT"])
