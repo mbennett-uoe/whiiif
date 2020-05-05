@@ -13,8 +13,8 @@ from iiif_order import order_object
 import string
 from lxml import etree
 
-__version__ = '0.0.1'
-DEBUG = False
+__version__ = '0.2.1'
+DEBUG = True
 
 def dprint(*args):
     if DEBUG:
@@ -51,15 +51,14 @@ def pipeline(alto, manifest, identifier, modify):
     if manifest_json is False:
         return False
 
-
     solr_doc = {"id": identifier,
                 "manifest_url": manifest_json["@id"],
-                "ocr_text": alto_out.decode('ascii')}
+                "ocr_text": out_path}  # + "{ascii}"} ## We need to add this bit when using plugin v0.4
 
     solr_url = "{}/{}/update/json/docs".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
 
     dprint("Posting to SOLR:", solr_url)
-    #dprint("Document:", json.dumps(solr_doc, indent=4))
+    dprint("Document:", json.dumps(solr_doc, indent=4))
 
     r = requests.post(solr_url, json=solr_doc, params=dict(softCommit="true"))
     if r.status_code == requests.codes.ok:
