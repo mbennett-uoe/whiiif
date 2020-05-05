@@ -3,6 +3,7 @@ import unittest
 import whiiif
 import os.path
 
+
 class BaseAppTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -21,6 +22,14 @@ class BaseAppTestCase(unittest.TestCase):
         xml_path = self.config["XML_LOCATION"]
         self.assertTrue(os.path.isdir(xml_path))
 
+    def test_config(self):
+        self.assertIn("SERVER_NAME", self.config)
+        self.assertIn("LOG_DIR", self.config)
+        self.assertIn("SOLR_URL", self.config)
+        self.assertIn("SOLR_CORE", self.config)
+        self.assertIn("OCR_TEXT_FIELD", self.config)
+        self.assertIn("MANIFEST_URL_FIELD", self.config)
+        self.assertIn("DOCUMENT_ID_FIELD", self.config)
 
 if __name__ == '__main__':
     unittest.main()
