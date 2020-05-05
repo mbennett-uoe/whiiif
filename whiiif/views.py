@@ -28,7 +28,7 @@ def search(manifest):
     app.logger.debug("Regexed manifest ID: {}".format(manifest))
 
     query_url = "{}/{}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
-    query_url += "/select?hl=on&hl.ocr.absoluteHighlights=true"
+    query_url += "/select?hl=on&hl.ocr.absoluteHighlights=true&hl.weightMatches=true"
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.ocr.fl={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.snippets={}".format(app.config["WITHIN_MAX_RESULTS"])
@@ -142,7 +142,7 @@ def collection_search():
     app.logger.debug("Request bleached q: {}".format(q))
 
     query_url = "{0}/{1}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
-    query_url += "/select?hl=on&rows={}".format(app.config["COLLECTION_MAX_RESULTS"])
+    query_url += "/select?hl=on&hl.weightMatches=true&rows={}".format(app.config["COLLECTION_MAX_RESULTS"])
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.ocr.fl={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.snippets={}".format(app.config["COLLECTION_MAX_DOCUMENT_RESULTS"])
@@ -227,7 +227,7 @@ def snippet_search(id):
     app.logger.debug("Request snips: {}".format(snips))
 
     query_url = "{0}/{1}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
-    query_url += "/select?hl=on"
+    query_url += "/select?hl=on&hl.weightMatches=true"
     query_url += "&hl.snippets={}".format(snips)
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.ocr.fl={}".format(app.config["OCR_TEXT_FIELD"])
