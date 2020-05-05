@@ -29,6 +29,7 @@ def search(manifest):
 
     query_url = "{}/{}".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
     query_url += "/select?hl=on&hl.ocr.absoluteHighlights=true&hl.weightMatches=true"
+    query_url += "&hl.ocr.limitBlock=page&hl.ocr.contextSize=1&hl.ocr.contextBlock=word"
     query_url += "&df={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.ocr.fl={}".format(app.config["OCR_TEXT_FIELD"])
     query_url += "&hl.snippets={}".format(app.config["WITHIN_MAX_RESULTS"])
