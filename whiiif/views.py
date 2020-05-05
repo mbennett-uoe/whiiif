@@ -183,15 +183,15 @@ def collection_search():
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
 
         for fragment in snippets:
-            x = fragment["region"]["ulx"]
-            y = fragment["region"]["uly"]
-            w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
-            h = fragment["region"]["lry"] - fragment["region"]["uly"]
+            x = fragment["regions"][0]["ulx"]
+            y = fragment["regions"][0]["uly"]
+            w = fragment["regions"][0]["lrx"] - fragment["regions"][0]["ulx"]
+            h = fragment["regions"][0]["lry"] - fragment["regions"][0]["uly"]
 
-            cv = cvlist[int(fragment["page"].replace("page_", ""))]
+            cv = cvlist[int(fragment["regions"][0]["page"].replace("page_", ""))]
             img = cv["images"][0]["resource"]["@id"]
             frag = img.replace("/full/full", "/{},{},{},{}/{},".format(x, y, w, h, int(w / 4)), 1)
-            canvas_doc = {"canvas": fragment["page"],
+            canvas_doc = {"canvas": fragment["regions"][0]["page"],
                           "region": "{},{},{},{}".format(x, y, w, h),
                           "url": frag,
                           "highlights": []}
@@ -253,23 +253,22 @@ def snippet_search(id):
     results = []
     for doc in docs:
         result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
-                  #                  "manifest_url": doc["manifest_url"],
                   "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
                   "canvases": []
                   }
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
 
         for fragment in snippets:
-            x = fragment["region"]["ulx"]
-            y = fragment["region"]["uly"]
-            w = fragment["region"]["lrx"] - fragment["region"]["ulx"]
-            h = fragment["region"]["lry"] - fragment["region"]["uly"]
+            x = fragment["regions"][0]["ulx"]
+            y = fragment["regions"][0]["uly"]
+            w = fragment["regions"][0]["lrx"] - fragment["regions"][0]["ulx"]
+            h = fragment["regions"][0]["lry"] - fragment["regions"][0]["uly"]
             if "scale" in doc and doc["scale"] != 1:
                 x, y, w, h = int(x), int(y), int(w), int(h)
                 x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(h * doc["scale"])
                 x, y, w, h = str(x), str(y), str(w), str(h)
 
-            canvas_doc = {"canvas": fragment["page"],
+            canvas_doc = {"canvas": fragment["regions"][0]["page"],
                           "region": "{},{},{},{}".format(x, y, w, h),
                           "highlights": []}
 
