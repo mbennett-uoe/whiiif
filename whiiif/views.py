@@ -54,7 +54,7 @@ def search(manifest):
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
         total_results += int(results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"])
         for fragment in snippets:
-            canvas = fragment["page"]
+            #canvas = fragment["page"]
             for highlight in fragment["highlights"]:
                 grouped_hls = []
                 for part in highlight:
@@ -68,7 +68,7 @@ def search(manifest):
                         scale = 1
                     grouped_hls.append({"manifest_id": doc[app.config["DOCUMENT_ID_FIELD"]],
                                         "manifest_url": doc[app.config["MANIFEST_URL_FIELD"]],
-                                        "canvas_id": canvas,
+                                        "canvas_id": part["page"],
                                         "coords": "{},{},{},{}".format(x, y, w, h),
                                         "chars": part["text"],
                                         "scale": scale})
