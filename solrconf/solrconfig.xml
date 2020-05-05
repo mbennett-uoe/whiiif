@@ -694,19 +694,9 @@
        queries across multiple shards
     -->
 
-  <searchComponent class="org.mdz.search.solrocr.solr.HighlightComponent" name="ocrHighlight"
-                   ocrFormat="org.mdz.search.solrocr.formats.alto.AltoFormat">
-    <lst name="ocrFields">
-      <str>ocr_text</str>
-    </lst>
-    <fieldLoader class="org.mdz.search.solrocr.lucene.fieldloader.PathFieldLoader" encoding="ascii">
-      <lst name="externalFields">
-        <str name="ocr_text">/opt/whiiif/resources/xml/{id}_escaped.xml</str>
-      </lst>
-    </fieldLoader>
 
-
-  </searchComponent>
+<searchComponent class="de.digitalcollections.solrocr.solr.OcrHighlightComponent"
+                   name="ocrHighlight" />
 
 
   <requestHandler name="/select" class="solr.SearchHandler">
@@ -723,6 +713,17 @@
          <str name="wt">xml</str> 
         -->
     </lst>
+
+       <arr name="components">
+         <str>query</str>
+         <str>facet</str>
+         <str>mlt</str>
+         <str>ocrHighlight</str>
+         <str>highlight</str>
+         <str>stats</str>
+         <str>debug</str>
+       </arr>
+
     <!-- In addition to defaults, "appends" params can be specified
          to identify values which should be appended to the list of
          multi-val params from the query (or the existing "defaults").
@@ -775,9 +776,9 @@
          <str>nameOfCustomComponent2</str>
        </arr>
       -->
-     <arr name="last-components">
+     <!--<arr name="last-components">
        <str>ocrHighlight</str>
-     </arr>
+     </arr>-->
 
   </requestHandler>
 

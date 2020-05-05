@@ -439,48 +439,41 @@
       <tokenizer class="solr.WhitespaceTokenizerFactory"/>
     </analyzer>
   </fieldType>
-  <fieldType name="text_ocr" class="solr.TextField" storeOffsetsWithPositions="true" termVectors="true">
-    <analyzer type="index">
-      <charFilter class="org.mdz.search.solrocr.formats.alto.AltoCharFilterFactory" />
-      <charFilter class="solr.HTMLStripCharFilterFactory" />
-      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-      <!--<filter class="solr.StopFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>-->
-      <filter class="solr.WordDelimiterGraphFilterFactory" catenateNumbers="1" generateNumberParts="1" splitOnCaseChange="0" generateWordParts="0" catenateAll="0" catenateWords="1"/>
-      <filter class="solr.LowerCaseFilterFactory"/>
-      <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-      <filter class="solr.PorterStemFilterFactory"/>
-      <filter class="solr.FlattenGraphFilterFactory"/>
-   </analyzer>
-    <analyzer type="query">
-      <charFilter class="org.mdz.search.solrocr.formats.alto.AltoCharFilterFactory" />
-      <charFilter class="solr.HTMLStripCharFilterFactory" />
-      <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-<!--      <filter class="solr.StopFilterFactory" words="lang/stopwords_en.txt" ignoreCase="true"/>-->
-      <filter class="solr.WordDelimiterGraphFilterFactory" catenateNumbers="1" generateNumberParts="1" splitOnCaseChange="0" generateWordParts="0" catenateAll="0" catenateWords="1"/>
-      <filter class="solr.LowerCaseFilterFactory"/>
-      <filter class="solr.KeywordMarkerFilterFactory" protected="protwords.txt"/>
-      <filter class="solr.PorterStemFilterFactory"/>
-      <filter class="solr.FlattenGraphFilterFactory"/>
-    </analyzer>
-  </fieldType>
 
+<fieldtype name="text_ocr" class="solr.TextField" storeOffsetsWithPositions="true" termVectors="true">
+  <analyzer type="index">
+    <charFilter class="de.digitalcollections.solrocr.lucene.filters.ExternalUtf8ContentFilterFactory" />
+    <charFilter class="de.digitalcollections.solrocr.lucene.filters.OcrCharFilterFactory" />
+    <tokenizer class="solr.StandardTokenizerFactory"/>
+
+    <filter class="solr.LowerCaseFilterFactory"/>
+    <filter class="solr.StopFilterFactory"/>
+    <filter class="solr.PorterStemFilterFactory"/>
+  </analyzer>
+  <analyzer type="query">
+
+    <tokenizer class="solr.StandardTokenizerFactory"/>
+    <filter class="solr.LowerCaseFilterFactory"/>
+    <filter class="solr.StopFilterFactory"/>
+    <filter class="solr.PorterStemFilterFactory"/>
+  </analyzer>
+</fieldtype>
+
+
+<field name="ocr_text" type="text_ocr" multiValued="false" indexed="true" stored="true" />
+<field name="manifest_id" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" uninvertible="false" omitPositions="true"/>
+<field name="manifest_url" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" omitPositions="true"/>
+<field name="canvas_id" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" uninvertible="false" docValues="false" omitPositions="true"/>
+<field name="scale" type="pfloat" indexed="true"  stored="true"/>
+ <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
 
 
   <field name="_nest_path_" type="_nest_path_"/>
   <field name="_root_" type="string" docValues="false" indexed="true" stored="false"/>
-  <field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>
+  <!--<field name="_text_" type="text_general" multiValued="true" indexed="true" stored="false"/>-->
   <field name="_version_" type="plong" indexed="false" stored="false"/>
-  <!--<field name="annotations" type="text_untoken" omitNorms="true" omitTermFreqAndPositions="true" indexed="false" stored="true" uninvertible="false" omitPositions="true"/>-->
-  <field name="canvas_id" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" uninvertible="false" docValues="false" omitPositions="true"/>
-  <!--<field name="canvas_url" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" uninvertible="false" docValues="false" omitPositions="true"/>-->
-  <!-- <field name="delete" type="text_general"/>-->
-  <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
-  <field name="manifest_id" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" uninvertible="false" omitPositions="true"/>
-  <field name="manifest_url" type="string" omitNorms="true" omitTermFreqAndPositions="true" indexed="true" stored="true" omitPositions="true"/>
-  <!--<field name="page_text" type="text_en_splitting" indexed="true" termOffsets="false" stored="true" uninvertible="false" termPositions="true" termVectors="true"/>
-  <field name="word_coords" type="text_general"/>-->
-  <field name="ocr_text" type="text_ocr" indexed="true" stored="false" multiValued="false"/>
-<!--  <field name="ocr_test" type="test" indexed="true" stored="true"/>-->
+
+
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>
   <dynamicField name="*_ancestor_path" type="ancestor_path" indexed="true" stored="true"/>
