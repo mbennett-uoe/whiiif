@@ -52,8 +52,9 @@ def search(manifest):
     results = []
     total_results = 0
     for doc in docs:
-        snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
-        total_results += int(results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"])
+        block = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]
+        snippets = block["snippets"]
+        total_results += int(block["numTotal"])
         for fragment in snippets:
             #canvas = fragment["page"]
             for highlight in fragment["highlights"]:
