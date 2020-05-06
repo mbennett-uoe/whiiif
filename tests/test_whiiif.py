@@ -3,29 +3,26 @@ from unittest import mock
 from unittest.mock import patch
 from whiiif import app
 import os.path
+import solr_responses
 
 
 class FakeResponse(object):
     status_code = 200
 
+    def __init__(self, test):
+        if test == "iiif":
+            self.json_data = solr_responses.IIIF
+        #elif:
+
     def json(self):
-        return {}
-
-
-def fake_request(url):
-    return FakeResponse()
+        return self.json_data
 
 
 class BaseAppTestCase(unittest.TestCase):
 
     def setUp(self):
         app.config['TESTING'] = True
-        app.config['SERVER_NAME'] = 'localhost:5000'
-        app.config['SOLR_URL'] = 'http://test/solr'
-        app.config['SOLR_CORE'] = 'whiiiftest'
-        app.config['OCR_TEXT_FIELD'] = 'ocr_text'
-        app.config['MANIFEST_URL_FIELD'] = 'manifest_url'
-        app.config['DOCUMENT_ID_FIELD'] = 'id'
+        app.config['DEBUG'] = False
         self.app = app.test_client()
 
     def test_index(self):
@@ -33,16 +30,75 @@ class BaseAppTestCase(unittest.TestCase):
         rv = self.app.get('/')
         self.assertIn('Welcome to Whiiif', rv.data.decode())
 
-    def test_search(self):
+
+class SearchTestCase(unittest.TestCase):
+
+    def setUp(self):
+        app.config['TESTING'] = True
+        app.config['DEBUG'] = False
+        app.config['SERVER_NAME'] = 'testserver:5000'
+        app.config['SOLR_URL'] = 'http://testserver/solr'
+        app.config['SOLR_CORE'] = 'whiiiftest'
+        app.config['OCR_TEXT_FIELD'] = 'ocr_text'
+        app.config['MANIFEST_URL_FIELD'] = 'manifest_url'
+        app.config['DOCUMENT_ID_FIELD'] = 'id'
+        self.app = app.test_client()
+
+    def test_search_query(self):
         with patch("requests.get") as mock_request:
-            mock_request.return_value = FakeResponse()
+            mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
-            mock_request.assert_called_once_with("http://test/solr/whiiiftest/select?hl=on&"
+            mock_request.assert_called_once_with("http://testserver/solr/whiiiftest/select?hl=on&"
                                                  "hl.ocr.absoluteHighlights=true&hl.weightMatches=true"
                                                  "&hl.ocr.limitBlock=page&hl.ocr.contextSize=1"
                                                  "&hl.ocr.contextBlock=word&df=ocr_text&hl.ocr.fl=ocr_text"
                                                  "&hl.snippets=4096&fq=id:test-manifest&q=myquery")
-        print(rv.data)
+
+    def test_search_context(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertListEqual(json_response["@context"], ['http://iiif.io/api/presentation/2/context.json',
+                                                             'http://iiif.io/api/search/1/context.json'])
+
+    def test_search_id(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest?q=myquery")
+
+    def test_search_result_counts(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["within"]["total"], 2)
+            self.assertEqual(len(json_response["resources"]), 2)
+            self.assertEqual(len(json_response["hits"]), 2)
+
+    def test_search_resources(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["resources"][0]["@id"], 'uun:whiiif:test-manifest:page_1069:0')
+            self.assertEqual(json_response["resources"][0]["on"],
+                             'http://mytestserver/manifests/test-manifest/canvas/page_1069#xywh=466,1206,31,66')
+            self.assertEqual(json_response["resources"][1]["@id"], 'uun:whiiif:test-manifest:page_1073:1')
+            self.assertEqual(json_response["resources"][1]["on"],
+                             'http://mytestserver/manifests/test-manifest/canvas/page_1073#xywh=5099,3600,9,56')
+
+    def test_search_hits(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["hits"][0]["annotations"], ['uun:whiiif:test-manifest:page_1069:0'])
+            self.assertEqual(json_response["hits"][0]["match"], 'test')
+            self.assertEqual(json_response["hits"][1]["annotations"], ['uun:whiiif:test-manifest:page_1073:1'])
+            self.assertEqual(json_response["hits"][1]["match"], 'test')
 
 
 if __name__ == '__main__':
