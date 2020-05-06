@@ -74,11 +74,11 @@ class SearchTestCase(unittest.TestCase):
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
             json_response = rv.get_json()
-            self.assertEqual(json_response["within"]["total"], 2)
-            self.assertEqual(len(json_response["resources"]), 2)
-            self.assertEqual(len(json_response["hits"]), 2)
+            self.assertEqual(json_response["within"]["total"], 3)  # Three hits
+            self.assertEqual(len(json_response["hits"]), 3)
+            self.assertEqual(len(json_response["resources"]), 4)  # One is multi-line, so has two resources
 
-    def test_search_resources(self):
+    def test_search_resources_single(self):
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -90,15 +90,15 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["resources"][1]["on"],
                              'http://mytestserver/manifests/test-manifest/canvas/page_1073#xywh=5099,3600,9,56')
 
-    def test_search_hits(self):
+    def test_search_hits_single(self):
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
             json_response = rv.get_json()
             self.assertEqual(json_response["hits"][0]["annotations"], ['uun:whiiif:test-manifest:page_1069:0'])
-            self.assertEqual(json_response["hits"][0]["match"], 'test')
+            self.assertEqual(json_response["hits"][0]["match"], 'test response')
             self.assertEqual(json_response["hits"][1]["annotations"], ['uun:whiiif:test-manifest:page_1073:1'])
-            self.assertEqual(json_response["hits"][1]["match"], 'test')
+            self.assertEqual(json_response["hits"][1]["match"], 'test response')
 
 
 if __name__ == '__main__':
