@@ -70,3 +70,14 @@ IIIF = {
                 ],
                 "numTotal": 3}}},
 }
+SOLR_ERROR = {
+  "responseHeader":{
+    "status":400,
+    "QTime":1,
+    },
+  "error":{
+    "metadata":[
+      "error-class","org.apache.solr.common.SolrException",
+      "root-error-class","org.apache.solr.common.SolrException"],
+    "msg":"undefined field errorfield",
+    "code":400}}

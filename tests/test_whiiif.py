@@ -4,17 +4,24 @@ from unittest.mock import patch
 from whiiif import app
 import os.path
 import solr_responses
+from requests.exceptions import ConnectionError
 
 
 class FakeResponse(object):
     status_code = 200
 
     def __init__(self, test):
+        self.test = test
+        self.json_data = {}
         if test == "iiif":
             self.json_data = solr_responses.IIIF
+        elif test == "solr_error":
+            self.json_data = solr_responses.SOLR_ERROR
         #elif:
 
     def json(self):
+        if self.test == "connection_failure":
+            raise ConnectionError
         return self.json_data
 
 
@@ -128,6 +135,26 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["hits"][2]["annotations"], ['uun:whiiif:test-manifest:page_537:2',
                                                                        'uun:whiiif:test-manifest:page_537:2b'])
             self.assertEqual(json_response["hits"][2]["match"], 'test response')
+
+    def test_search_ignored(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery&motivation=tagging')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["within"]["ignored"], ["motivation"])
+
+    def test_search_connection_failure(self):
+        with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
+            mock_request.return_value = FakeResponse(test="connection_failure")
+            rv = self.app.get('/search/test-manifest')
+            self.assertIn("ERROR:whiiif:Error occurred with SOLR query: <class 'requests.exceptions.ConnectionError'>",
+                          log_catcher.output)
+            json_response = rv.get_json()
+            self.assertListEqual(json_response["@context"], ['http://iiif.io/api/presentation/2/context.json',
+                                                             'http://iiif.io/api/search/1/context.json'])
+            self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest")
+            self.assertEqual(json_response["within"]["total"], 0)
+
 
 
 if __name__ == '__main__':

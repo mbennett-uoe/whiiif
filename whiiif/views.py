@@ -44,8 +44,10 @@ def search(manifest):
         results_json = solr_results.json()
         app.logger.debug("Solr JSON response code: {}".format(results_json["responseHeader"]["status"]))
         docs = results_json["response"]["docs"]
-    except (requests.exceptions.ConnectionError, KeyError, ValueError, AttributeError) as e:
-        app.log_exception(e)
+    except (requests.exceptions.ConnectionError, ConnectionRefusedError, KeyError, ValueError, AttributeError) as e:
+        #app.log_exception(e)
+        app.logger.error("Error occurred with SOLR query: {}".format(type(e)))
+        app.logger.error("Error message: {}".format(e))
         results_json = {}
         docs = []
 
