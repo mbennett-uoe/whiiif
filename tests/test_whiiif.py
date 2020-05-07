@@ -200,7 +200,23 @@ class CollectionSearchTestCase(unittest.TestCase):
         app.config['OCR_TEXT_FIELD'] = 'ocr_text'
         app.config['MANIFEST_URL_FIELD'] = 'manifest_url'
         app.config['DOCUMENT_ID_FIELD'] = 'id'
+        app.config['COLLECTION_MAX_DOCUMENT_RESULTS'] = 2
+        app.config['COLLECTION_MAX_RESULTS'] = 20
+        app.config['COLLECTION_SNIPPET_CONTEXT'] = 'word'
+        app.config['COLLECTION_SNIPPET_CONTEXT_SIZE'] = 5
+        app.config['COLLECTION_SNIPPET_CONTEXT_LIMIT'] = 'page'
         self.app = app.test_client()
+
+    def test_collection_search_query(self):
+        # Does the Collection Search endpoint generate the right SOLR query?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            mock_request.assert_called_once_with("http://testserver/solr/whiiiftest/select?hl=on"
+                                                 "&hl.weightMatches=true&rows=20&df=ocr_text&hl.ocr.fl=ocr_text"
+                                                 "&hl.snippets=2&hl.ocr.contextBlock=word&hl.ocr.contextSize=5"
+                                                 "&hl.ocr.limitBlock=page&q=myquery")
+
 
 if __name__ == '__main__':
     unittest.main()
