@@ -155,6 +155,17 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest")
             self.assertEqual(json_response["within"]["total"], 0)
 
+    def test_search_solr_error(self):
+        with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
+            mock_request.return_value = FakeResponse(test="solr_error")
+            rv = self.app.get('/search/test-manifest')
+            self.assertIn("ERROR:whiiif:Error occurred with SOLR query: <class 'KeyError'>",
+                          log_catcher.output)
+            json_response = rv.get_json()
+            self.assertListEqual(json_response["@context"], ['http://iiif.io/api/presentation/2/context.json',
+                                                             'http://iiif.io/api/search/1/context.json'])
+            self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest")
+            self.assertEqual(json_response["within"]["total"], 0)
 
 
 if __name__ == '__main__':
