@@ -17,7 +17,8 @@ class FakeResponse(object):
             self.json_data = solr_responses.IIIF
         elif test == "solr_error":
             self.json_data = solr_responses.SOLR_ERROR
-        #elif:
+        elif test == "iiif_scaled":
+            self.json_data = solr_responses.IIIF_SCALED
 
     def json(self):
         if self.test == "connection_failure":
@@ -167,6 +168,13 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest")
             self.assertEqual(json_response["within"]["total"], 0)
 
+    def test_search_scaled(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif_scaled")
+            rv = self.app.get('/search/test-scaled-manifest?q=test')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["resources"][0]["on"],
+                             'http://mytestserver/manifests/test-scaled-manifest/canvas/1#xywh=316,363,93,46')
 
 if __name__ == '__main__':
     unittest.main()

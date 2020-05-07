@@ -70,14 +70,50 @@ IIIF = {
                 ],
                 "numTotal": 3}}},
 }
-SOLR_ERROR = {
-  "responseHeader":{
-    "status":400,
-    "QTime":1,
+
+IIIF_SCALED = {
+    "responseHeader": {
+        "status": 0,
+        "QTime": 11,
     },
-  "error":{
-    "metadata":[
-      "error-class","org.apache.solr.common.SolrException",
-      "root-error-class","org.apache.solr.common.SolrException"],
-    "msg":"undefined field errorfield",
-    "code":400}}
+    "response": {"numFound": 1, "start": 0, "docs": [
+        {
+            "id": "test-scaled-manifest",
+            "manifest_url": "http://mytestserver/manifests/test-scaled-manifest",
+            "ocr_text": "/test/manifests/test-scaled-manifest",
+            "scale": 2.90625,
+        }]
+                 },
+    "ocrHighlighting": {
+        "test-scaled-manifest": {
+            "ocr_text": {
+                "snippets": [{
+                    "page": "1",
+                    "text": "Scaled <em>test</em>",
+                    "score": 1.1692171E7,
+                    "regions": [{
+                        "ulx": 51,
+                        "uly": 93,
+                        "lrx": 670,
+                        "lry": 141}],
+                    "highlights": [[{
+                        "text": "test",
+                        "page": "1",
+                        "ulx": 109,
+                        "uly": 125,
+                        "lrx": 141,
+                        "lry": 141}]]}],
+                "numTotal": 1}}}
+}
+
+SOLR_ERROR = {
+    "responseHeader": {
+        "status": 400,
+        "QTime": 1,
+    },
+    "error": {
+        "metadata": [
+            "error-class", "org.apache.solr.common.SolrException",
+            "root-error-class", "org.apache.solr.common.SolrException"],
+        "msg": "undefined field errorfield",
+        "code": 400}}
