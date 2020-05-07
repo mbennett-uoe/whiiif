@@ -100,6 +100,27 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["hits"][1]["annotations"], ['uun:whiiif:test-manifest:page_1073:1'])
             self.assertEqual(json_response["hits"][1]["match"], 'test response')
 
+    def test_search_resources_multiple(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["resources"][2]["@id"], 'uun:whiiif:test-manifest:page_537:2')
+            self.assertEqual(json_response["resources"][2]["on"],
+                             'http://mytestserver/manifests/test-manifest/canvas/page_537#xywh=3133,1319,303,123')
+            self.assertEqual(json_response["resources"][3]["@id"], 'uun:whiiif:test-manifest:page_537:2b')
+            self.assertEqual(json_response["resources"][3]["on"],
+                             'http://mytestserver/manifests/test-manifest/canvas/page_537#xywh=622,1419,544,161')
+
+    def test_search_hits_multiple(self):
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="iiif")
+            rv = self.app.get('/search/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response["hits"][2]["annotations"], ['uun:whiiif:test-manifest:page_537:2',
+                                                                       'uun:whiiif:test-manifest:page_537:2b'])
+            self.assertEqual(json_response["hits"][2]["match"], 'test response')
+
 
 if __name__ == '__main__':
     unittest.main()
