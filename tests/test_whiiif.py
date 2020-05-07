@@ -39,7 +39,7 @@ class BaseAppTestCase(unittest.TestCase):
         self.assertIn('Welcome to Whiiif', rv.data.decode())
 
 
-class SearchTestCase(unittest.TestCase):
+class IIIFSearchTestCase(unittest.TestCase):
 
     def setUp(self):
         app.config['TESTING'] = True
@@ -52,7 +52,8 @@ class SearchTestCase(unittest.TestCase):
         app.config['DOCUMENT_ID_FIELD'] = 'id'
         self.app = app.test_client()
 
-    def test_search_query(self):
+    def test_iiif_search_query(self):
+        # Does the IIIF endpoint generate the right SOLR query?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -62,7 +63,8 @@ class SearchTestCase(unittest.TestCase):
                                                  "&hl.ocr.contextBlock=word&df=ocr_text&hl.ocr.fl=ocr_text"
                                                  "&hl.snippets=4096&fq=id:test-manifest&q=myquery")
 
-    def test_search_context(self):
+    def test_iiif_search_context(self):
+        # Does the IIIF endpoint response contain the correct @context block?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -70,14 +72,16 @@ class SearchTestCase(unittest.TestCase):
             self.assertListEqual(json_response["@context"], ['http://iiif.io/api/presentation/2/context.json',
                                                              'http://iiif.io/api/search/1/context.json'])
 
-    def test_search_id(self):
+    def test_iiif_search_id(self):
+        # Does the IIIF endpoint response contain the correct @id?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
             json_response = rv.get_json()
             self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest?q=myquery")
 
-    def test_search_result_counts(self):
+    def test_iiif_search_result_counts(self):
+        # Does the IIIF endpoint response contain correct numbers of items?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -86,7 +90,8 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(len(json_response["hits"]), 3)
             self.assertEqual(len(json_response["resources"]), 4)  # One is multi-line, so has two resources
 
-    def test_search_resources_single(self):
+    def test_iiif_search_resources_single(self):
+        # Does the IIIF endpoint response have a correct resources block for single annotation results?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -102,7 +107,8 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["resources"][1]["resource"], {'@type': 'cnt:ContentAsText',
                                                                          'chars': 'test response'})
 
-    def test_search_hits_single(self):
+    def test_iiif_search_hits_single(self):
+        # Does the IIIF endpoint response have a correct hits block for single annotation results?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -112,7 +118,8 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["hits"][1]["annotations"], ['uun:whiiif:test-manifest:page_1073:1'])
             self.assertEqual(json_response["hits"][1]["match"], 'test response')
 
-    def test_search_resources_multiple(self):
+    def test_iiif_search_resources_multiple(self):
+        # Does the IIIF endpoint response have a correct resources block for multiple annotation results?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -128,7 +135,8 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["resources"][3]["resource"], {'@type': 'cnt:ContentAsText',
                                                                          'chars': 'response'})
 
-    def test_search_hits_multiple(self):
+    def test_iiif_search_hits_multiple(self):
+        # Does the IIIF endpoint response have a correct hits block for multiple annotation results?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery')
@@ -137,14 +145,16 @@ class SearchTestCase(unittest.TestCase):
                                                                        'uun:whiiif:test-manifest:page_537:2b'])
             self.assertEqual(json_response["hits"][2]["match"], 'test response')
 
-    def test_search_ignored(self):
+    def test_iiif_search_ignored(self):
+        # Does the IIIF endpoint response correctly add the ignored value?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif")
             rv = self.app.get('/search/test-manifest?q=myquery&motivation=tagging')
             json_response = rv.get_json()
             self.assertEqual(json_response["within"]["ignored"], ["motivation"])
 
-    def test_search_connection_failure(self):
+    def test_iiif_search_connection_failure(self):
+        # Does the IIIF endpoint register the error and return gracefully when SOLR doesn't respond?
         with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
             mock_request.return_value = FakeResponse(test="connection_failure")
             rv = self.app.get('/search/test-manifest')
@@ -156,7 +166,8 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest")
             self.assertEqual(json_response["within"]["total"], 0)
 
-    def test_search_solr_error(self):
+    def test_iiif_search_solr_error(self):
+        # Does the IIIF endpoint register the error and return gracefully when SOLR returns an error?
         with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
             mock_request.return_value = FakeResponse(test="solr_error")
             rv = self.app.get('/search/test-manifest')
@@ -168,13 +179,15 @@ class SearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["@id"], "http://testserver:5000/search/test-manifest")
             self.assertEqual(json_response["within"]["total"], 0)
 
-    def test_search_scaled(self):
+    def test_iiif_search_scaled(self):
+        # Does the IIIF endpoint correctly apply scaling when present in SOLR results?
         with patch("requests.get") as mock_request:
             mock_request.return_value = FakeResponse(test="iiif_scaled")
             rv = self.app.get('/search/test-scaled-manifest?q=test')
             json_response = rv.get_json()
             self.assertEqual(json_response["resources"][0]["on"],
                              'http://mytestserver/manifests/test-scaled-manifest/canvas/1#xywh=316,363,93,46')
+
 
 if __name__ == '__main__':
     unittest.main()
