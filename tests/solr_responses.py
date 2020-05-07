@@ -70,7 +70,6 @@ IIIF = {
                 ],
                 "numTotal": 3}}},
 }
-
 IIIF_SCALED = {
     "responseHeader": {
         "status": 0,
@@ -105,7 +104,6 @@ IIIF_SCALED = {
                         "lry": 141}]]}],
                 "numTotal": 1}}}
 }
-
 SOLR_ERROR = {
     "responseHeader": {
         "status": 400,
@@ -117,3 +115,100 @@ SOLR_ERROR = {
             "root-error-class", "org.apache.solr.common.SolrException"],
         "msg": "undefined field errorfield",
         "code": 400}}
+
+COLLECTION = {
+    "responseHeader": {
+        "status": 0,
+        "QTime": 26,
+    },
+    "response": {"numFound": 2, "start": 0, "docs": [
+        {
+            "id": "collection-manifest",
+            "manifest_url": "http://mytestserver/manifests/collection-manifest",
+            "ocr_text": "/test/manifests/collection-manifest",
+        },
+        {
+            "id": "collection-another",
+            "manifest_url": "http://mytestserver/manifests/collection-another",
+            "ocr_text": "/test/manifests/collection-another"}
+    ]
+                 },
+    "ocrHighlighting": {
+        "collection-manifest": {
+            "ocr_text": {
+                "snippets": [{
+                    "text": "this is a multi-part collection <em>test response</em> with some context",
+                    "score": 2.4530088E7,
+                    "regions": [{
+                        "ulx": 1752,
+                        "uly": 2897,
+                        "lrx": 4774,
+                        "lry": 3107,
+                        "page": "page_258"}],
+                    "highlights": [[{
+                        "ulx": 2861,
+                        "uly": 6,
+                        "lrx": 3022,
+                        "lry": 86,
+                        "text": "test",
+                        "page": "page_258"},
+                        {
+                            "ulx": 0,
+                            "uly": 102,
+                            "lrx": 799,
+                            "lry": 205,
+                            "text": "response",
+                            "page": "page_258"}]]},
+                    {
+                        "text": "this is a single part collection <em>test response</em> with some context",
+                        "score": 2.4740064E7,
+                        "regions": [{
+                            "ulx": 951,
+                            "uly": 3626,
+                            "lrx": 3969,
+                            "lry": 3852,
+                            "page": "page_259"}],
+                        "highlights": [[{
+                            "ulx": 742,
+                            "uly": 94,
+                            "lrx": 1646,
+                            "lry": 226,
+                            "text": "test response",
+                            "page": "page_259"}]]}],
+                "numTotal": 8}},
+        "collection-another": {
+            "ocr_text": {
+                "snippets": [{
+                    "text": "this is the second collection <em>test response</em> with some different context",
+                    "score": 7.24624E7,
+                    "regions": [{
+                        "ulx": 697,
+                        "uly": 2690,
+                        "lrx": 3829,
+                        "lry": 3910,
+                        "page": "page_845"}],
+                    "highlights": [[{
+                        "ulx": 1031,
+                        "uly": 135,
+                        "lrx": 1806,
+                        "lry": 246,
+                        "text": "test response",
+                        "page": "page_845"}]]},
+                    {
+                        "text": "and a second <em>test response</em> for the second collection result",
+                        "score": 9.0326496E7,
+                        "regions": [{
+                            "ulx": 881,
+                            "uly": 4194,
+                            "lrx": 3193,
+                            "lry": 4420,
+                            "page": "page_845"}],
+                        "highlights": [[{
+                            "ulx": 321,
+                            "uly": 101,
+                            "lrx": 1138,
+                            "lry": 209,
+                            "text": "test response",
+                            "page": "page_845"}]]}],
+                "numTotal": 2}}},
+    "highlighting": {}}
