@@ -1,13 +1,13 @@
 import unittest
-from unittest import mock
 from unittest.mock import patch
 from whiiif import app
-import os.path
 import solr_responses
 from requests.exceptions import ConnectionError
 
 
 class FakeResponse(object):
+    """Class to simulate the responses from SOLR via monkeypatching the request.get calls"""
+
     status_code = 200
 
     def __init__(self, test):
@@ -27,7 +27,7 @@ class FakeResponse(object):
 
 
 class BaseAppTestCase(unittest.TestCase):
-
+    """Tests for the functionality of the base application"""
     def setUp(self):
         app.config['TESTING'] = True
         app.config['DEBUG'] = False
@@ -40,7 +40,7 @@ class BaseAppTestCase(unittest.TestCase):
 
 
 class IIIFSearchTestCase(unittest.TestCase):
-
+    """Tests for the IIIF Search API endpoint"""
     def setUp(self):
         app.config['TESTING'] = True
         app.config['DEBUG'] = False
@@ -188,6 +188,19 @@ class IIIFSearchTestCase(unittest.TestCase):
             self.assertEqual(json_response["resources"][0]["on"],
                              'http://mytestserver/manifests/test-scaled-manifest/canvas/1#xywh=316,363,93,46')
 
+
+class CollectionSearchTestCase(unittest.TestCase):
+    """Tests for the Collection Search endpoint"""
+    def setUp(self):
+        app.config['TESTING'] = True
+        app.config['DEBUG'] = False
+        app.config['SERVER_NAME'] = 'testserver:5000'
+        app.config['SOLR_URL'] = 'http://testserver/solr'
+        app.config['SOLR_CORE'] = 'whiiiftest'
+        app.config['OCR_TEXT_FIELD'] = 'ocr_text'
+        app.config['MANIFEST_URL_FIELD'] = 'manifest_url'
+        app.config['DOCUMENT_ID_FIELD'] = 'id'
+        self.app = app.test_client()
 
 if __name__ == '__main__':
     unittest.main()
