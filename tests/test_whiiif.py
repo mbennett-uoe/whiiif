@@ -280,6 +280,22 @@ class CollectionSearchTestCase(unittest.TestCase):
             self.assertEqual(json_response[1]["canvases"][0]["region"], "697,2690,3132,1220")
             self.assertEqual(json_response[1]["canvases"][1]["region"], "881,4194,2312,226")
 
+    def test_collection_search_url(self):
+        # Does the Collection Search endpoint response contain correct a correct image URL?
+        # https://test-iiif-endpoint/iiif/collectionimage0/full/full/0/default.jpg",
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["url"], "https://test-iiif-endpoint/iiif/collectionimage0"
+                                                                     "/1752,2897,3022,210/755,/0/default.jpg")
+            self.assertEqual(json_response[0]["canvases"][1]["url"], "https://test-iiif-endpoint/iiif/collectionimage1"
+                                                                     "/951,3626,3018,226/754,/0/default.jpg")
+            self.assertEqual(json_response[1]["canvases"][0]["url"], "https://test-iiif-endpoint/iiif/collectionimage3"
+                                                                     "/697,2690,3132,1220/783,/0/default.jpg")
+            self.assertEqual(json_response[1]["canvases"][1]["url"], "https://test-iiif-endpoint/iiif/collectionimage3"
+                                                                     "/881,4194,2312,226/578,/0/default.jpg")
+
     def test_collection_search_coords_single(self):
         # Does the Collection Search endpoint response have correct coords block for a single part result?
         with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
