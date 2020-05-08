@@ -217,6 +217,7 @@ class CollectionSearchTestCase(unittest.TestCase):
         app.config['OCR_TEXT_FIELD'] = 'ocr_text'
         app.config['MANIFEST_URL_FIELD'] = 'manifest_url'
         app.config['DOCUMENT_ID_FIELD'] = 'id'
+        app.config['MANIFEST_LOCATION'] = '/test/manifests'
         app.config['COLLECTION_MAX_DOCUMENT_RESULTS'] = 2
         app.config['COLLECTION_MAX_RESULTS'] = 20
         app.config['COLLECTION_SNIPPET_CONTEXT'] = 'word'
@@ -321,6 +322,18 @@ class CollectionSearchTestCase(unittest.TestCase):
             json_response = rv.get_json()
             self.assertEqual(json_response, [])
 
+    def test_collection_search_missing_manifests(self):
+        # Does the Collection Search endpoint register the error and skip the result if the manifest JSON is missing?
+        with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            self.assertIn("ERROR:whiiif:Missing manifest JSON file: /test/manifests/collection-manifest.json",
+                          log_catcher.output)
+            self.assertIn("ERROR:whiiif:Missing manifest JSON file: /test/manifests/collection-another.json",
+                          log_catcher.output)
+            json_response = rv.get_json()
+            self.assertEqual(json_response, [])
+
 if __name__ == '__main__':
     unittest.main()
 
@@ -329,7 +342,7 @@ if __name__ == '__main__':
 
 
 #               'XML_LOCATION': '/test/xml',
-#               'MANIFEST_LOCATION': '/test/manifests',
+#               ,
 #               'WITHIN_MAX_RESULTS': 128,
 #               'SNIPPETS_MAX_RESULTS': 3,
 #               'SNIPPET_CONTEXT': 'word',
