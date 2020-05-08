@@ -22,6 +22,10 @@ class FakeResponse(object):
             self.json_data = solr_responses.IIIF_SCALED
         elif test == "collection":
             self.json_data = solr_responses.COLLECTION
+        elif test == "snippet":
+            self.json_data = solr_responses.SNIPPET
+        elif test == "snippet_scaled":
+            self.json_data = solr_responses.SNIPPET_SCALED
 
     def json(self):
         if self.test == "connection_failure":
@@ -35,12 +39,10 @@ class FakeManifests:
     manifests = None
 
     def __init__(self):
-        self.responses = ['{"sequences": [{"canvases": []}]}', '{"second": "dictionary", "two": "keys"}']
         self.m1 = mock_open(read_data=manifests.COLLECTION_ONE)
         self.m2 = mock_open(read_data=manifests.COLLECTION_TWO)
         self.m1.side_effect = [self.m1.return_value, self.m2.return_value]
         self.manifests = self.m1
-
 
 
 class BaseAppTestCase(unittest.TestCase):
@@ -324,6 +326,7 @@ class CollectionSearchTestCase(unittest.TestCase):
 
     def test_collection_search_missing_manifests(self):
         # Does the Collection Search endpoint register the error and skip the result if the manifest JSON is missing?
+        # TODO: Add a third manifest to the response, and have only two "missing"
         with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
             mock_request.return_value = FakeResponse(test="collection")
             rv = self.app.get('/collection/search?q=myquery')

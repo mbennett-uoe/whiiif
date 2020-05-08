@@ -115,7 +115,6 @@ SOLR_ERROR = {
             "root-error-class", "org.apache.solr.common.SolrException"],
         "msg": "undefined field errorfield",
         "code": 400}}
-
 COLLECTION = {
     "responseHeader": {
         "status": 0,
@@ -211,4 +210,149 @@ COLLECTION = {
                             "text": "test response",
                             "page": "page_1"}]]}],
                 "numTotal": 2}}},
+    "highlighting": {}}
+SNIPPET = {
+    "responseHeader": {
+        "status": 0,
+        "QTime": 9,
+    },
+    "response": {"numFound": 1, "start": 0, "docs": [
+        {
+            "id": "test-manifest",
+            "manifest_url": "http://mytestserver/manifests/test-manifest",
+            "ocr_text": "/test/manifests/test-manifest"
+            }]
+                 },
+    "ocrHighlighting": {
+        "test-manifest": {
+            "ocr_text": {
+                "snippets": [{
+                    "text": "snippet <em>test response</em> with context",
+                    "score": 2.6101544E7,
+                    "regions": [{
+                        "ulx": 2124,
+                        "uly": 3672,
+                        "lrx": 4681,
+                        "lry": 3826,
+                        "page": "page_224"}],
+                    "highlights": [[{
+                        "ulx": 1673,
+                        "uly": 0,
+                        "lrx": 2446,
+                        "lry": 97,
+                        "text": "test response",
+                        "page": "page_224"}]]},
+                    {
+                        "text": "snippet with multipart <em>test response</em> and context",
+                        "score": 4.5137584E7,
+                        "regions": [{
+                            "ulx": 622,
+                            "uly": 1279,
+                            "lrx": 3436,
+                            "lry": 1580,
+                            "page": "page_537"}],
+                        "highlights": [[{
+                            "ulx": 2511,
+                            "uly": 40,
+                            "lrx": 2814,
+                            "lry": 163,
+                            "text": "test",
+                            "page": "page_537"},
+                            {
+                                "ulx": 0,
+                                "uly": 140,
+                                "lrx": 544,
+                                "lry": 301,
+                                "text": "response",
+                                "page": "page_537"}]]},
+                    {
+                        "text": "and the third <em>test response</em> of the snippet",
+                        "score": 6.4672812E7,
+                        "regions": [{
+                            "ulx": 1313,
+                            "uly": 2983,
+                            "lrx": 4110,
+                            "lry": 3139,
+                            "page": "page_537"}],
+                        "highlights": [[{
+                            "ulx": 1324,
+                            "uly": 33,
+                            "lrx": 2095,
+                            "lry": 133,
+                            "text": "test response",
+                            "page": "page_537"}]]}],
+                "numTotal": 4}}},
+    "highlighting": {}}
+SNIPPET_SCALED = {
+    "responseHeader": {
+        "status": 0,
+        "QTime": 9,
+    },
+    "response": {"numFound": 1, "start": 0, "docs": [
+        {
+            "id": "test-manifest",
+            "manifest_url": "http://mytestserver/manifests/test-manifest",
+            "ocr_text": "/test/manifests/test-manifest",
+            "scale": 3.5
+            }]
+                 },
+    "ocrHighlighting": {
+        "test-manifest": {
+            "ocr_text": {
+                "snippets": [{
+                    "text": "snippet <em>test response</em> with context",
+                    "score": 2.6101544E7,
+                    "regions": [{
+                        "ulx": 2124,
+                        "uly": 3672,
+                        "lrx": 4681,
+                        "lry": 3826,
+                        "page": "page_224"}],
+                    "highlights": [[{
+                        "ulx": 1673,
+                        "uly": 0,
+                        "lrx": 2446,
+                        "lry": 97,
+                        "text": "test response",
+                        "page": "page_224"}]]},
+                    {
+                        "text": "snippet with multipart <em>test response</em> and context",
+                        "score": 4.5137584E7,
+                        "regions": [{
+                            "ulx": 622,
+                            "uly": 1279,
+                            "lrx": 3436,
+                            "lry": 1580,
+                            "page": "page_537"}],
+                        "highlights": [[{
+                            "ulx": 2511,
+                            "uly": 40,
+                            "lrx": 2814,
+                            "lry": 163,
+                            "text": "test",
+                            "page": "page_537"},
+                            {
+                                "ulx": 0,
+                                "uly": 140,
+                                "lrx": 544,
+                                "lry": 301,
+                                "text": "response",
+                                "page": "page_537"}]]},
+                    {
+                        "text": "and the third <em>test response</em> of the snippet",
+                        "score": 6.4672812E7,
+                        "regions": [{
+                            "ulx": 1313,
+                            "uly": 2983,
+                            "lrx": 4110,
+                            "lry": 3139,
+                            "page": "page_537"}],
+                        "highlights": [[{
+                            "ulx": 1324,
+                            "uly": 33,
+                            "lrx": 2095,
+                            "lry": 133,
+                            "text": "test response",
+                            "page": "page_537"}]]}],
+                "numTotal": 4}}},
     "highlighting": {}}
