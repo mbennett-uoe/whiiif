@@ -177,7 +177,7 @@ def collection_search():
             mani_json = json.load(open(manifest_path, 'r'))
             cvlist = mani_json["sequences"][0]["canvases"]
         except FileNotFoundError as e:
-            app.log_exception(e)
+            app.logger.error("Missing manifest JSON file: {}".format(manifest_path))
             continue
 
         result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
