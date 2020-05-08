@@ -337,6 +337,134 @@ class CollectionSearchTestCase(unittest.TestCase):
             json_response = rv.get_json()
             self.assertEqual(json_response, [])
 
+
+class SnippetSearchTestCase(unittest.TestCase):
+    """Tests for the Snippet Search endpoint"""
+    def setUp(self):
+        app.config['TESTING'] = True
+        app.config['DEBUG'] = False
+        app.config['SERVER_NAME'] = 'testserver:5000'
+        app.config['SOLR_URL'] = 'http://testserver/solr'
+        app.config['SOLR_CORE'] = 'whiiiftest'
+        app.config['OCR_TEXT_FIELD'] = 'ocr_text'
+        app.config['MANIFEST_URL_FIELD'] = 'manifest_url'
+        app.config['DOCUMENT_ID_FIELD'] = 'id'
+        app.config['MANIFEST_LOCATION'] = '/test/manifests'
+        app.config['SNIPPETS_MAX_RESULTS'] = 3
+        app.config['SNIPPET_CONTEXT'] = 'word'
+        app.config['SNIPPET_CONTEXT_SIZE'] = 5
+        app.config['SNIPPET_CONTEXT_LIMIT'] = 'line'
+        self.app = app.test_client()
+
+    def test_snippet_search_query(self):
+        # Does the Snippet Search endpoint generate the right SOLR query?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            mock_request.assert_called_once_with("http://testserver/solr/whiiiftest/select?hl=on"
+                                                 "&hl.weightMatches=true&hl.snippets=3&df=ocr_text&hl.ocr.fl=ocr_text"
+                                                 "&hl.ocr.contextBlock=word&hl.ocr.contextSize=5&hl.ocr.limitBlock=line"
+                                                 "&fq=id:test-manifest&q=myquery")
+
+    def test_snippet_search_result_counts(self):
+        # Does the Snippet Search endpoint response contain correct numbers of items?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(len(json_response), 1)
+            self.assertEqual(json_response[0]["total_results"], 4)
+            self.assertEqual(len(json_response[0]["canvases"]), 3)
+
+    def test_snippet_search_id(self):
+        # Does the Snippet Search endpoint response contain the correct id?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["id"], "test-manifest")
+
+    def test_snippet_search_canvas_id(self):
+        # Does the Snippet Search endpoint response contain correct canvas ids?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["canvas"], "page_224")
+            self.assertEqual(json_response[0]["canvases"][1]["canvas"], "page_537")
+            self.assertEqual(json_response[0]["canvases"][2]["canvas"], "page_537")
+
+    def test_snippet_search_region(self):
+        # Does the Snippet Search endpoint response contain correct regions?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["region"], "2124,3672,2557,154")
+            self.assertEqual(json_response[0]["canvases"][1]["region"], "622,1279,2814,301")
+            self.assertEqual(json_response[0]["canvases"][2]["region"], "1313,2983,2797,156")
+
+    def test_snippet_search_coords_single(self):
+        # Does the Snippet Search endpoint response have correct coords block for a single part result?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["highlights"][0]["coords"], "1673,0,773,97")
+            self.assertEqual(json_response[0]["canvases"][0]["highlights"][0]["chars"], "test response")
+            self.assertEqual(json_response[0]["canvases"][2]["highlights"][0]["coords"], "1324,33,771,100")
+            self.assertEqual(json_response[0]["canvases"][2]["highlights"][0]["chars"], "test response")
+
+    def test_snippet_search_coords_multi(self):
+        # Does the Snippet Search endpoint response have correct coords block for a multiple part result?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][1]["highlights"][0]["coords"], "2511,40,303,123")
+            self.assertEqual(json_response[0]["canvases"][1]["highlights"][0]["chars"], "test")
+            self.assertEqual(json_response[0]["canvases"][1]["highlights"][1]["coords"], "0,140,544,161")
+            self.assertEqual(json_response[0]["canvases"][1]["highlights"][1]["chars"], "response")
+
+    def test_snippet_search_connection_failure(self):
+        # Does the Snippet Search endpoint register the error and return gracefully when SOLR doesn't respond?
+        with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
+            mock_request.return_value = FakeResponse(test="connection_failure")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            self.assertIn("ERROR:whiiif:Error occurred with SOLR query: <class 'requests.exceptions.ConnectionError'>",
+                          log_catcher.output)
+            json_response = rv.get_json()
+            self.assertEqual(json_response, [])
+
+    def test_snippet_search_solr_error(self):
+        # Does the Snippet Search endpoint register the error and return gracefully when SOLR returns an error?
+        with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
+            mock_request.return_value = FakeResponse(test="solr_error")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            self.assertIn("ERROR:whiiif:Error occurred with SOLR query: <class 'KeyError'>",
+                          log_catcher.output)
+            json_response = rv.get_json()
+            self.assertEqual(json_response, [])
+
+    def test_snippet_search_snips(self):
+        # Does the Snippet Search endpoint correctly handle the snips parameter?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet")
+            rv = self.app.get('/snippets/test-manifest?q=myquery&snips=1')
+            mock_request.assert_called_once_with("http://testserver/solr/whiiiftest/select?hl=on"
+                                                 "&hl.weightMatches=true&hl.snippets=1&df=ocr_text&hl.ocr.fl=ocr_text"
+                                                 "&hl.ocr.contextBlock=word&hl.ocr.contextSize=5&hl.ocr.limitBlock=line"
+                                                 "&fq=id:test-manifest&q=myquery")
+
+    def test_snippet_search_scaled(self):
+        # Does the Snippet Search endpoint response correctly apply scaling when present in SOLR response?
+        with patch("requests.get") as mock_request:
+            mock_request.return_value = FakeResponse(test="snippet_scaled")
+            rv = self.app.get('/snippets/test-manifest?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["region"], "7434,12852,8949,539")
+            self.assertEqual(json_response[0]["canvases"][0]["highlights"][0]["coords"], "5855,0,2705,339")
+
 if __name__ == '__main__':
     unittest.main()
 
