@@ -186,14 +186,14 @@ COLLECTION = {
                         "uly": 2690,
                         "lrx": 3829,
                         "lry": 3910,
-                        "page": "page_0"}],
+                        "page": "page_1"}],
                     "highlights": [[{
                         "ulx": 1031,
                         "uly": 135,
                         "lrx": 1806,
                         "lry": 246,
                         "text": "test response",
-                        "page": "page_0"}]]},
+                        "page": "page_1"}]]},
                     {
                         "text": "and a second <em>test response</em> for the second collection result",
                         "score": 9.0326496E7,
@@ -202,13 +202,13 @@ COLLECTION = {
                             "uly": 4194,
                             "lrx": 3193,
                             "lry": 4420,
-                            "page": "page_0"}],
+                            "page": "page_1"}],
                         "highlights": [[{
                             "ulx": 321,
                             "uly": 101,
                             "lrx": 1138,
                             "lry": 209,
                             "text": "test response",
-                            "page": "page_0"}]]}],
+                            "page": "page_1"}]]}],
                 "numTotal": 2}}},
     "highlighting": {}}

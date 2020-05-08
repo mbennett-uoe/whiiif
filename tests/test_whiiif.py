@@ -246,6 +246,81 @@ class CollectionSearchTestCase(unittest.TestCase):
             self.assertEqual(len(json_response[0]["canvases"]), 2)
             self.assertEqual(len(json_response[1]["canvases"]), 2)
 
+    def test_collection_search_manifest_url(self):
+        # Does the Collection Search endpoint response contain correct manifest_urls?
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["manifest_url"], "http://mytestserver/manifests/collection-manifest")
+            self.assertEqual(json_response[1]["manifest_url"], "http://mytestserver/manifests/collection-another")
+
+    def test_collection_search_canvas_id(self):
+        # Does the Collection Search endpoint response contain correct canvas ids?
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["canvas"], "page_0")
+            self.assertEqual(json_response[0]["canvases"][1]["canvas"], "page_1")
+            self.assertEqual(json_response[1]["canvases"][0]["canvas"], "page_1")
+            self.assertEqual(json_response[1]["canvases"][1]["canvas"], "page_1")
+
+    def test_collection_search_region(self):
+        # Does the Collection Search endpoint response contain correct regions?
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["region"], "1752,2897,3022,210")
+            self.assertEqual(json_response[0]["canvases"][1]["region"], "951,3626,3018,226")
+            self.assertEqual(json_response[1]["canvases"][0]["region"], "697,2690,3132,1220")
+            self.assertEqual(json_response[1]["canvases"][1]["region"], "881,4194,2312,226")
+
+    def test_collection_search_coords_single(self):
+        # Does the Collection Search endpoint response have correct coords block for a single part result?
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][1]["highlights"][0]["coords"], "185,23,226,33")
+            self.assertEqual(json_response[0]["canvases"][1]["highlights"][0]["chars"], "test response")
+            self.assertEqual(json_response[1]["canvases"][0]["highlights"][0]["coords"], "257,33,193,27")
+            self.assertEqual(json_response[1]["canvases"][0]["highlights"][0]["chars"], "test response")
+            self.assertEqual(json_response[1]["canvases"][1]["highlights"][0]["coords"], "80,25,204,27")
+            self.assertEqual(json_response[1]["canvases"][1]["highlights"][0]["chars"], "test response")
+
+    def test_collection_search_coords_multi(self):
+        # Does the Collection Search endpoint response have correct coords block for a multiple part result?
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(json_response[0]["canvases"][0]["highlights"][0]["coords"], "715,1,40,20")
+            self.assertEqual(json_response[0]["canvases"][0]["highlights"][0]["chars"], "test")
+            self.assertEqual(json_response[0]["canvases"][0]["highlights"][1]["coords"], "0,25,199,25")
+            self.assertEqual(json_response[0]["canvases"][0]["highlights"][1]["chars"], "response")
+
+    def test_collection_search_connection_failure(self):
+        # Does the Collection Search endpoint register the error and return gracefully when SOLR doesn't respond?
+        with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
+            mock_request.return_value = FakeResponse(test="connection_failure")
+            rv = self.app.get('/collection/search?q=myquery')
+            self.assertIn("ERROR:whiiif:Error occurred with SOLR query: <class 'requests.exceptions.ConnectionError'>",
+                          log_catcher.output)
+            json_response = rv.get_json()
+            self.assertEqual(json_response, [])
+
+    def test_collection_search_solr_error(self):
+        # Does the Collection Search endpoint register the error and return gracefully when SOLR returns an error?
+        with patch("requests.get") as mock_request, self.assertLogs(level='ERROR') as log_catcher:
+            mock_request.return_value = FakeResponse(test="solr_error")
+            rv = self.app.get('/collection/search?q=myquery')
+            self.assertIn("ERROR:whiiif:Error occurred with SOLR query: <class 'KeyError'>",
+                          log_catcher.output)
+            json_response = rv.get_json()
+            self.assertEqual(json_response, [])
+
 if __name__ == '__main__':
     unittest.main()
 
