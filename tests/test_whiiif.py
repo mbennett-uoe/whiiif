@@ -1,7 +1,8 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, mock_open
 from whiiif import app
 import solr_responses
+import manifests
 from requests.exceptions import ConnectionError
 
 
@@ -19,11 +20,27 @@ class FakeResponse(object):
             self.json_data = solr_responses.SOLR_ERROR
         elif test == "iiif_scaled":
             self.json_data = solr_responses.IIIF_SCALED
+        elif test == "collection":
+            self.json_data = solr_responses.COLLECTION
 
     def json(self):
         if self.test == "connection_failure":
             raise ConnectionError
         return self.json_data
+
+
+class FakeManifests:
+    """Class to simulate the data returned from reading manifest JSON files"""
+
+    manifests = None
+
+    def __init__(self):
+        self.responses = ['{"sequences": [{"canvases": []}]}', '{"second": "dictionary", "two": "keys"}']
+        self.m1 = mock_open(read_data=manifests.COLLECTION_ONE)
+        self.m2 = mock_open(read_data=manifests.COLLECTION_TWO)
+        self.m1.side_effect = [self.m1.return_value, self.m2.return_value]
+        self.manifests = self.m1
+
 
 
 class BaseAppTestCase(unittest.TestCase):
@@ -209,7 +226,7 @@ class CollectionSearchTestCase(unittest.TestCase):
 
     def test_collection_search_query(self):
         # Does the Collection Search endpoint generate the right SOLR query?
-        with patch("requests.get") as mock_request:
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
             mock_request.return_value = FakeResponse(test="collection")
             rv = self.app.get('/collection/search?q=myquery')
             mock_request.assert_called_once_with("http://testserver/solr/whiiiftest/select?hl=on"
@@ -217,6 +234,17 @@ class CollectionSearchTestCase(unittest.TestCase):
                                                  "&hl.snippets=2&hl.ocr.contextBlock=word&hl.ocr.contextSize=5"
                                                  "&hl.ocr.limitBlock=page&q=myquery")
 
+    def test_collection_search_result_counts(self):
+        # Does the Collection Search endpoint response contain correct numbers of items?
+        with patch("requests.get") as mock_request, patch("builtins.open", FakeManifests().manifests):
+            mock_request.return_value = FakeResponse(test="collection")
+            rv = self.app.get('/collection/search?q=myquery')
+            json_response = rv.get_json()
+            self.assertEqual(len(json_response), 2)  # Two hits
+            self.assertEqual(json_response[0]["total_results"], 8)  # First manifest has 8 results
+            self.assertEqual(json_response[1]["total_results"], 2)  # Second manifest has 2 results
+            self.assertEqual(len(json_response[0]["canvases"]), 2)
+            self.assertEqual(len(json_response[1]["canvases"]), 2)
 
 if __name__ == '__main__':
     unittest.main()
