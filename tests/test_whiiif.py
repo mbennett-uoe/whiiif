@@ -483,21 +483,3 @@ class SnippetSearchTestCase(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
-
-#               'DEBUG': True,
-#
-
-
-#               'XML_LOCATION': '/test/xml',
-#               ,
-#               'WITHIN_MAX_RESULTS': 128,
-#               'SNIPPETS_MAX_RESULTS': 3,
-#               'SNIPPET_CONTEXT': 'word',
-#               'SNIPPET_CONTEXT_SIZE': 5,
-#               'SNIPPET_CONTEXT_LIMIT': 'line',
-#               'COLLECTION_MAX_DOCUMENT_RESULTS': 2,
-#               'COLLECTION_MAX_RESULTS': 20,
-#               'COLLECTION_SNIPPET_CONTEXT': 'word',
-#               'COLLECTION_SNIPPET_CONTEXT_SIZE': 5,
-#               'COLLECTION_SNIPPET_CONTEXT_LIMIT': 'page',
-#                }
