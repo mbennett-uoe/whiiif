@@ -14,8 +14,7 @@ security etc.
 Whiiif is designed for Python 3, but may work under Python 2, however no testing of this has been done. To use py2, 
 please edit `Makefile`
 
-Whiiif requires a preinstalled SOLR instance (any version 8.0+) and installation of the [`solr-ocrhighlighting` plugin v0.3.1]
-(https://github.com/dbmdz/solr-ocrhighlighting/releases/tag/0.3.1).
+Whiiif requires a preinstalled SOLR instance (any version 8.0+) and installation of the [`solr-ocrhighlighting` plugin v0.3.1](https://github.com/dbmdz/solr-ocrhighlighting/releases/tag/0.3.1).
 
 SOLR configuration files are provided in the `solrconf` directory and you can use these if you just want to get up and
 running quickly. Otherwise, please refer to the documentation for more detailed instructions.
