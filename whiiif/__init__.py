@@ -3,7 +3,11 @@ from flask import Flask
 
 app = Flask(__name__)
 app.config.from_object('whiiif.default_settings')
-#app.config.from_envvar('WHIIIF_SETTINGS')
+app.config.from_envvar('WHIIIF_SETTINGS', silent=True)
+
+#from werkzeug.contrib.fixers import ProxyFix
+#app.wsgi_app = ProxyFix(app.wsgi_app)
+
 
 if not app.debug:
     import logging

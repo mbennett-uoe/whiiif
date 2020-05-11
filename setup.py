@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='whiiif',
-    version='1.0',
+    version='2.0.0',
     long_description=__doc__,
     packages=find_packages(),
     include_package_data=True,
@@ -10,6 +10,7 @@ setup(
     install_requires=[
         'flask',
         'requests',
-        'lxml'
+        'lxml',
+        'bleach'
     ],
 )
