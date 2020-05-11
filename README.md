@@ -9,7 +9,6 @@ OCR transcriptions are ingested from word-level [ALTO](https://www.loc.gov/stand
 Please note this is a work in development and therefore is offered with no guarantees as to stability, usefulness,
 security etc.
 
-
 ## Prerequisites
 
 Whiiif is designed for Python 3, but may work under Python 2, however no testing of this has been done. To use py2, 
