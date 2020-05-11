@@ -1,3 +1,6 @@
+# WHIIIF DEFAULT SETTINGS FILE
+# Rather than change values here, it's probably better to override the variables in the settings.cfg file
+
 # REQUIRED SETTINGS
 # General Whiiif Settings
 SERVER_NAME = 'localhost:5000'
@@ -11,7 +14,7 @@ MANIFEST_URL_FIELD = 'manifest_url'  # name of the field containing the URL of t
 DOCUMENT_ID_FIELD = 'id'  # the id field used for search urls
 
 # External files
-XML_LOCATION = '/opt/whiiif/resources/xml'  # location to store ALTO-XML files. must be same as PathFieldLoader in solr config
+XML_LOCATION = '/opt/whiiif/resources/xml'  # location to store ALTO-XML files
 MANIFEST_LOCATION = '/opt/whiiif/resources/manifests'  # location of the IIIF manifests
 
 # OPTIONAL SETTINGS (i.e if they are missing the application won't die!)
