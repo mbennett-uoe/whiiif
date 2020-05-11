@@ -35,7 +35,7 @@
        that you fully re-index after changing this setting as it can
        affect both how text is indexed and queried.
   -->
-  <luceneMatchVersion>8.0.0</luceneMatchVersion>
+  <luceneMatchVersion>8.1.1</luceneMatchVersion>
 
   <!-- <lib/> directives can be used to instruct Solr to load any Jars
        identified and use them to resolve any "plugins" specified in
@@ -72,7 +72,6 @@
        The examples below can be used to load some solr-contribs along
        with their external dependencies.
     -->
-  <!--<lib dir="../lib" />-->
   <lib dir="${solr.install.dir:../../../..}/contrib/extraction/lib" regex=".*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-cell-\d.*\.jar" />
 
@@ -86,9 +85,6 @@
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-velocity-\d.*\.jar" />
   <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-ltr-\d.*\.jar" />
 
-
- <!-- <lib dir="${solr.install.dir:../../../..}/dist/" regex="solr-ocrhighlighting-\d.*-SNAPSHOT\.jar" />-->
-
   <!-- an exact 'path' can be used instead of a 'dir' to specify a
        specific jar file.  This will cause a serious error to be logged
        if it can't be loaded.
@@ -96,7 +92,6 @@
   <!--
      <lib path="../a-jar-that-does-not-exist.jar" />
   -->
-<!--     <lib path="lib/solr-ocrhighlighting-0.1-SNAPSHOT.jar" />-->
 
   <!-- Data Directory
 
@@ -374,10 +369,15 @@
        ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
   <query>
 
-    <!-- Maximum number of clauses in each BooleanQuery,  an exception
-         is thrown if exceeded.  It is safe to increase or remove this setting,
-         since it is purely an arbitrary limit to try and catch user errors where
-         large boolean queries may not be the best implementation choice.
+    <!-- Maximum number of clauses allowed when parsing a boolean query string.
+         
+         This limit only impacts boolean queries specified by a user as part of a query string,
+         and provides per-collection controls on how complex user specified boolean queries can
+         be.  Query strings that specify more clauses then this will result in an error.
+         
+         If this per-collection limit is greater then the global `maxBooleanClauses` limit
+         specified in `solr.xml`, it will have no effect, as that setting also limits the size
+         of user specified boolean queries.
       -->
     <maxBooleanClauses>${solr.max.booleanClauses:1024}</maxBooleanClauses>
 
@@ -694,7 +694,6 @@
        queries across multiple shards
     -->
 
-
 <searchComponent class="de.digitalcollections.solrocr.solr.OcrHighlightComponent"
                    name="ocrHighlight" />
 
@@ -714,7 +713,7 @@
         -->
     </lst>
 
-       <arr name="components">
+      <arr name="components">
          <str>query</str>
          <str>facet</str>
          <str>mlt</str>
@@ -776,10 +775,6 @@
          <str>nameOfCustomComponent2</str>
        </arr>
       -->
-     <!--<arr name="last-components">
-       <str>ocrHighlight</str>
-     </arr>-->
-
   </requestHandler>
 
   <!-- A request handler that returns indented JSON by default -->
@@ -1378,5 +1373,4 @@
       EditorialMarkerFactory will do exactly that:
      <transformer name="qecBooster" class="org.apache.solr.response.transform.EditorialMarkerFactory" />
     -->
-
 </config>
