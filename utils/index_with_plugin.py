@@ -2,18 +2,17 @@
 
 """ index_with_plugin.py: indexing tool for whiiif, using solr-ocrhighlighting """
 
-from whiiif import app
-from flask import url_for
 import argparse
 import json
-from os import path
-import requests
 from collections import OrderedDict
-from iiif_order import order_object
-import string
-from lxml import etree
+from os import path
 
-__version__ = '0.2.1'
+import requests
+from iiif_order import order_object
+
+from whiiif import app
+
+__version__ = '0.3.0'
 DEBUG = True
 
 def dprint(*args):
@@ -51,9 +50,9 @@ def pipeline(alto, manifest, identifier, modify):
     if manifest_json is False:
         return False
 
-    solr_doc = {"id": identifier,
-                "manifest_url": manifest_json["@id"],
-                "ocr_text": out_path}  # + "{ascii}"} ## We need to add this bit when using plugin v0.4
+    solr_doc = {app.config["DOCUMENT_ID_FIELD"]: identifier,
+                app.config["MANIFEST_URL_FIELD"]: manifest_json["@id"],
+                app.config["OCR_TEXT_FIELD"]: out_path }
 
     solr_url = "{}/{}/update/json/docs".format(app.config["SOLR_URL"], app.config["SOLR_CORE"])
 
@@ -70,10 +69,10 @@ def pipeline(alto, manifest, identifier, modify):
     if modify:
         dprint("Adding IIIF service to manifest file")
         app.app_context().push()
-        search_url = url_for("search", manifest=identifier)
-        service_doc = {"@context": "http://iiif.io/api/search/0/context.json",
+        search_url = "{}/search/{}".format(app.config["SERVER_NAME"], identifier)
+        service_doc = {"@context": "http://iiif.io/api/search/1/context.json",
                        "@id": search_url,
-                       "profile": "http://iiif.io/api/search/0/search"
+                       "profile": "http://iiif.io/api/search/1/search"
                        }
         if "service" in manifest_json:
             if type(manifest_json["service"]) == list:
@@ -81,8 +80,6 @@ def pipeline(alto, manifest, identifier, modify):
             elif type(manifest_json["service"]) == dict or type(manifest_json["service"]) == OrderedDict:
                 manifest_json["service"] = [manifest_json["service"], service_doc]
             else:
-                #dprint("Couldn't add service to manifest, don't know how to deal with key type:",
-                #       type(manifest_json["service"]))
                 manifest_json["service"] = [manifest_json["service"], service_doc]
         else:
             manifest_json["service"] = service_doc
@@ -123,13 +120,6 @@ if __name__ == "__main__":
                         action='version',
                         version=__version__,
                         help='show version number and exit')
-    # parser.add_argument('-c',
-    #                     action='store',
-    #                     type=int,
-    #                     metavar='CANVAS',
-    #                     dest='canvas',
-    #                     default=0,
-    #                     help='start from specified canvas index')
     parser.add_argument('-d', '--debug',
                         action='store_true',
                         help='enable debug output')
