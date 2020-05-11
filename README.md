@@ -9,22 +9,17 @@ OCR transcriptions are ingested from word-level [ALTO](https://www.loc.gov/stand
 Please note this is a work in development and therefore is offered with no guarantees as to stability, usefulness,
 security etc.
 
-## Quick Start
-
-Run the application:
-
-    make run
-
-And open it in the browser at [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
-
 
 ## Prerequisites
 
 Whiiif is designed for Python 3, but may work under Python 2, however no testing of this has been done. To use py2, 
 please edit `Makefile`
 
-Whiiif requires a preinstalled SOLR instance, and configuration in `settings.cfg`. A schema and other necessary SOLR
-configuration files are provided in the `solrconf` directory. Please copy these into the `conf` folder for the Whiiif core.
+Whiiif requires a preinstalled SOLR instance (any version 8.0+) and installation of the [`solr-ocrhighlighting` plugin v0.3.1]
+(https://github.com/dbmdz/solr-ocrhighlighting/releases/tag/0.3.1).
+
+SOLR configuration files are provided in the `solrconf` directory and you can use these if you just want to get up and
+running quickly. Otherwise, please refer to the documentation for more detailed instructions.
 
 Some Flask dependencies are compiled during installation, so `gcc` and Python header files need to be present.
 For example, on Ubuntu:
