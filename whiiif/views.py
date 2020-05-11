@@ -1,9 +1,11 @@
 import json
 import re
 from os import path
-from flask import render_template, request, url_for
-import requests
+
 import bleach
+import requests
+from flask import render_template, request
+
 from whiiif import app
 
 
@@ -45,7 +47,6 @@ def search(manifest):
         app.logger.debug("Solr JSON response code: {}".format(results_json["responseHeader"]["status"]))
         docs = results_json["response"]["docs"]
     except (requests.exceptions.ConnectionError, ConnectionRefusedError, KeyError, ValueError, AttributeError) as e:
-        #app.log_exception(e)
         app.logger.error("Error occurred with SOLR query: {}".format(type(e)))
         app.logger.error("Error message: {}".format(e))
         results_json = {}
@@ -58,7 +59,6 @@ def search(manifest):
         snippets = block["snippets"]
         total_results += int(block["numTotal"])
         for fragment in snippets:
-            #canvas = fragment["page"]
             for highlight in fragment["highlights"]:
                 grouped_hls = []
                 for part in highlight:
@@ -171,7 +171,6 @@ def collection_search():
 
     results = []
     for doc in docs:
-
         try:
             manifest_path = path.join(app.config["MANIFEST_LOCATION"], doc[app.config["DOCUMENT_ID_FIELD"]]) + ".json"
             mani_json = json.load(open(manifest_path, 'r'))
@@ -182,7 +181,8 @@ def collection_search():
 
         result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
                   "manifest_url": doc[app.config["MANIFEST_URL_FIELD"]],
-                  "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
+                  "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][
+                      app.config["OCR_TEXT_FIELD"]]["numTotal"],
                   "canvases": []
                   }
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
@@ -225,7 +225,8 @@ def snippet_search(id):
     app.logger.info("Processing Snippet Search request for document {}".format(id))
 
     q = bleach.clean(request.args.get("q", default=""), strip=True, tags=[])
-    snips = bleach.clean(request.args.get("snips", default=str(app.config["SNIPPETS_MAX_RESULTS"])), strip=True, tags=[])
+    snips = bleach.clean(request.args.get("snips", default=str(app.config["SNIPPETS_MAX_RESULTS"])), strip=True,
+                         tags=[])
 
     app.logger.debug("Request original q: {}".format(request.args.get("q", default="")))
     app.logger.debug("Request bleached q: {}".format(q))
@@ -259,7 +260,8 @@ def snippet_search(id):
     results = []
     for doc in docs:
         result = {"id": doc[app.config["DOCUMENT_ID_FIELD"]],
-                  "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["numTotal"],
+                  "total_results": results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][
+                      app.config["OCR_TEXT_FIELD"]]["numTotal"],
                   "canvases": []
                   }
         snippets = results_json["ocrHighlighting"][doc[app.config["DOCUMENT_ID_FIELD"]]][app.config["OCR_TEXT_FIELD"]]["snippets"]
@@ -287,8 +289,8 @@ def snippet_search(id):
                     h = int((part["lry"] - part["uly"]))
                     if "scale" in doc and doc["scale"] != 1:
                         x, y, w, h = int(x), int(y), int(w), int(h)
-                        x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]), int(
-                            h * doc["scale"])
+                        x, y, w, h = int(x * doc["scale"]), int(y * doc["scale"]), int(w * doc["scale"]),\
+                                     int(h * doc["scale"])
                         x, y, w, h = str(x), str(y), str(w), str(h)
 
                     canvas_doc["highlights"].append({"coords": "{},{},{},{}".format(x, y, w, h),
